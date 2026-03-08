@@ -12,7 +12,7 @@ Requirements for production deployment. Each maps to roadmap phases.
 - [ ] **AUTH-01**: User can create account with email and password
 - [ ] **AUTH-02**: User can log in with email and password
 - [ ] **AUTH-03**: User can log out
-- [ ] **AUTH-04**: User session persists across browser refresh
+- [x] **AUTH-04**: User session persists across browser refresh
 
 ### Backend Infrastructure
 
@@ -63,7 +63,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-01 | Phase 2 | Pending |
 | AUTH-02 | Phase 2 | Pending |
 | AUTH-03 | Phase 2 | Pending |
-| AUTH-04 | Phase 2 | Pending |
+| AUTH-04 | Phase 2 | Complete |
 | BACK-01 | Phase 1 | Complete |
 | BACK-02 | Phase 1 | Complete |
 | BACK-03 | Phase 1 | Complete |
