@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Copy, Trash2, Check, Loader2, Clock, History, X, ChevronRight } from 'lucide-react';
+import { Mic, Square, Copy, Trash2, Check, Loader2, Clock, History, X, ChevronRight, LogIn, LogOut } from 'lucide-react';
 import { streamTranscription } from './lib/api';
+import { useAuth } from './context/AuthContext';
+import { AuthModal } from './components/AuthModal';
 
 interface Dictation {
   id: string;
@@ -10,6 +12,9 @@ interface Dictation {
 }
 
 export default function App() {
+  const { user, loading, signOut } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -18,7 +23,7 @@ export default function App() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
-  
+
   const [dictations, setDictations] = useState<Dictation[]>([]);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -211,6 +216,15 @@ export default function App() {
     setShowHistory(false);
   };
 
+  // Show loading spinner during initial auth check
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#fcfcfc]">
+        <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#fcfcfc] text-neutral-900 font-sans flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-neutral-100 to-transparent -z-10" />
@@ -223,13 +237,32 @@ export default function App() {
               Dictate
             </h1>
           </div>
-          <button 
-            onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-600 bg-white border border-neutral-200 rounded-full hover:bg-neutral-50 transition-colors shadow-sm"
-          >
-            <History className="w-4 h-4" />
-            History
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-600 bg-white border border-neutral-200 rounded-full hover:bg-neutral-50 transition-colors shadow-sm"
+            >
+              <History className="w-4 h-4" />
+              History
+            </button>
+            {user ? (
+              <button
+                onClick={signOut}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-600 bg-white border border-neutral-200 rounded-full hover:bg-neutral-50 transition-colors shadow-sm"
+              >
+                <LogOut className="w-4 h-4" />
+                Log out
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-full hover:bg-neutral-800 transition-colors shadow-sm"
+              >
+                <LogIn className="w-4 h-4" />
+                Log in
+              </button>
+            )}
+          </div>
         </div>
         
         <div className="relative">
@@ -379,6 +412,12 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {/* Auth Modal - shown for unauthenticated users or when manually opened */}
+      <AuthModal
+        isOpen={showAuthModal || (!user && !loading)}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 }
