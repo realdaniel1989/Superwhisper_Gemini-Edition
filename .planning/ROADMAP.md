@@ -12,7 +12,7 @@ This roadmap transforms a client-side dictation prototype into a secure, multi-u
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Backend API** - Secure transcription proxy with OpenRouter integration
+- [x] **Phase 1: Backend API** - Secure transcription proxy with OpenRouter integration
 - [ ] **Phase 2: Authentication** - User accounts with Supabase Auth
 - [ ] **Phase 3: Database Storage** - Persistent dictations with user ownership
 - [ ] **Phase 4: Deployment** - Railway deployment for frontend and backend
@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md — Create Express server with health check and transcription endpoint skeleton (Wave 1)
-- [ ] 01-02-PLAN.md — Integrate OpenRouter with streaming, fallback, and frontend wiring (Wave 2)
+- [x] 01-02-PLAN.md — Integrate OpenRouter with streaming, fallback, and frontend wiring (Wave 2)
 
 ### Phase 2: Authentication
 **Goal**: Users can create accounts and securely access them from any device.
@@ -84,7 +84,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Backend API | 1/2 | In progress | 01-01 |
+| 1. Backend API | 2/2 | Complete | 01-01, 01-02 |
 | 2. Authentication | 0/2 | Not started | - |
 | 3. Database Storage | 0/2 | Not started | - |
 | 4. Deployment | 0/2 | Not started | - |
