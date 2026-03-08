@@ -28,11 +28,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Transcription endpoint accepts audio and returns streaming transcription text
   3. OpenRouter API key is only in backend environment (never exposed to frontend)
   4. Fallback model is used when primary model fails
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 01-01: Create Express server with transcription endpoint
-- [ ] 01-02: Integrate OpenRouter SDK with streaming and fallback
+- [ ] 01-01-PLAN.md — Create Express server with health check and transcription endpoint skeleton (Wave 1)
+- [ ] 01-02-PLAN.md — Integrate OpenRouter with streaming, fallback, and frontend wiring (Wave 2)
 
 ### Phase 2: Authentication
 **Goal**: Users can create accounts and securely access them from any device.
@@ -84,7 +84,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Backend API | 0/2 | Not started | - |
+| 1. Backend API | 0/2 | Ready to execute | - |
 | 2. Authentication | 0/2 | Not started | - |
 | 3. Database Storage | 0/2 | Not started | - |
 | 4. Deployment | 0/2 | Not started | - |
