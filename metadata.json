@@ -1,0 +1,5 @@
+{
+  "name": "Browser Dictation",
+  "description": "A polished, desktop-quality dictation and voice-to-text tool.",
+  "requestFramePermissions": ["microphone"]
+}
