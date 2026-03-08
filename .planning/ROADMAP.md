@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — Create Express server with health check and transcription endpoint skeleton (Wave 1)
+- [x] 01-01-PLAN.md — Create Express server with health check and transcription endpoint skeleton (Wave 1)
 - [ ] 01-02-PLAN.md — Integrate OpenRouter with streaming, fallback, and frontend wiring (Wave 2)
 
 ### Phase 2: Authentication
@@ -84,7 +84,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Backend API | 0/2 | Ready to execute | - |
+| 1. Backend API | 1/2 | In progress | 01-01 |
 | 2. Authentication | 0/2 | Not started | - |
 | 3. Database Storage | 0/2 | Not started | - |
 | 4. Deployment | 0/2 | Not started | - |

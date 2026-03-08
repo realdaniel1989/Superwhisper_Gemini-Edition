@@ -16,8 +16,8 @@ Requirements for production deployment. Each maps to roadmap phases.
 
 ### Backend Infrastructure
 
-- [ ] **BACK-01**: Backend API server deployed on Railway
-- [ ] **BACK-02**: API endpoint for transcription requests
+- [x] **BACK-01**: Backend API server deployed on Railway
+- [x] **BACK-02**: API endpoint for transcription requests
 - [ ] **BACK-03**: OpenRouter integration with Gemini 3.1 Flash Lite Preview
 - [ ] **BACK-04**: Fallback model support when primary unavailable
 
@@ -64,8 +64,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-02 | Phase 2 | Pending |
 | AUTH-03 | Phase 2 | Pending |
 | AUTH-04 | Phase 2 | Pending |
-| BACK-01 | Phase 1 | Pending |
-| BACK-02 | Phase 1 | Pending |
+| BACK-01 | Phase 1 | Complete |
+| BACK-02 | Phase 1 | Complete |
 | BACK-03 | Phase 1 | Pending |
 | BACK-04 | Phase 1 | Pending |
 | DATA-01 | Phase 3 | Pending |
