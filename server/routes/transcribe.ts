@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import multer from 'multer';
+import { streamTranscription } from '../services/openrouter.js';
 
 const router = express.Router();
 
@@ -7,11 +8,11 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 /**
- * Transcription endpoint (skeleton)
+ * Transcription endpoint
  * Accepts multipart/form-data with audio file
- * Will be integrated with OpenRouter API in Plan 02
+ * Returns SSE stream with transcription chunks
  */
-router.post('/api/transcribe', upload.single('audio'), (req: Request, res: Response) => {
+router.post('/api/transcribe', upload.single('audio'), async (req: Request, res: Response) => {
   try {
     // Check if audio file was provided
     const audioFile = req.file;
@@ -23,19 +24,32 @@ router.post('/api/transcribe', upload.single('audio'), (req: Request, res: Respo
       });
     }
 
-    // Placeholder response - actual transcription will be implemented in Plan 02
-    return res.status(200).json({
-      message: 'Transcription endpoint ready',
-      audioReceived: true,
-      audioSize: audioFile.size,
-      audioMimeType: audioFile.mimetype
-    });
+    // Set SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    // Convert buffer to base64
+    const audioBase64 = audioFile.buffer.toString('base64');
+    const mimeType = audioFile.mimetype;
+
+    // Stream transcription
+    const fullText = await streamTranscription(
+      audioBase64,
+      mimeType,
+      (chunk: string) => {
+        res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+      }
+    );
+
+    // Send completion event
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
   } catch (error) {
     console.error('Transcription error:', error);
-    return res.status(500).json({
-      error: 'Transcription failed',
-      message: 'An error occurred while processing the audio'
-    });
+    const message = error instanceof Error ? error.message : 'An error occurred while processing the audio';
+    res.write(`data: ${JSON.stringify({ error: message })}\n\n`);
+    res.end();
   }
 });
 
