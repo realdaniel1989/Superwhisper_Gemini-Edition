@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import healthRouter from './routes/health.js';
 
 // Load environment variables
 dotenv.config();
@@ -10,7 +11,9 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(express.json());
 
-// Health check endpoint will be mounted here
+// Mount routes
+app.use(healthRouter);
+
 // Transcription endpoint will be mounted at /api
 
 app.listen(PORT, () => {
