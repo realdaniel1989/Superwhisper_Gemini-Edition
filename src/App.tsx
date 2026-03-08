@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Mic, Square, Copy, Trash2, Check, Loader2, Clock, History, X, ChevronRight } from 'lucide-react';
-import { GoogleGenAI } from '@google/genai';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import { streamTranscription } from './lib/api';
 
 interface Dictation {
   id: string;
@@ -69,50 +67,15 @@ export default function App() {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  const blobToBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = (reader.result as string).split(',')[1];
-        resolve(base64String);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  };
-
   const transcribeAudio = async (blob: Blob, duration: number) => {
     setIsTranscribing(true);
     setTranscription('');
     try {
-      const base64Data = await blobToBase64(blob);
-      const audioPart = {
-        inlineData: {
-          mimeType: blob.type,
-          data: base64Data,
-        },
-      };
-      
-      const responseStream = await ai.models.generateContentStream({
-        model: "gemini-3.1-flash-lite-preview",
-        contents: {
-          parts: [
-            audioPart,
-            { text: "Transcribe the following audio accurately. Output only the transcription, without any extra formatting, markdown, or conversational text. If the audio is empty or unintelligible, output nothing." }
-          ]
-        }
-      });
-      
-      let fullText = '';
-      for await (const chunk of responseStream) {
-        if (chunk.text) {
-          fullText += chunk.text;
-          setTranscription(fullText);
-        }
-      }
-      
-      if (fullText.trim()) {
-        saveDictation(fullText, duration);
+      const text = await streamTranscription(blob);
+      setTranscription(text);
+
+      if (text.trim()) {
+        saveDictation(text, duration);
       }
     } catch (error) {
       console.error("Transcription error:", error);
