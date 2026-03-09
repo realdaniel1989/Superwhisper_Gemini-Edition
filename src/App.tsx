@@ -92,6 +92,7 @@ export default function App() {
 
   const [dictations, setDictations] = useState<Dictation[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -111,6 +112,20 @@ export default function App() {
         console.error("Failed to parse dictations", e);
       }
     }
+  }, []);
+
+  // Offline detection - block recording when offline
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   const saveDictation = (text: string, duration: number) => {
@@ -397,7 +412,9 @@ export default function App() {
                 ) : (
                   <button
                     onClick={startRecording}
-                    className="w-16 h-16 flex items-center justify-center rounded-full bg-neutral-900 text-white hover:bg-neutral-800 transition-all active:scale-95 shadow-lg shadow-neutral-900/20 relative z-10"
+                    disabled={!isOnline}
+                    title={isOnline ? "Start recording" : "Recording unavailable - you're offline"}
+                    className="w-16 h-16 flex items-center justify-center rounded-full bg-neutral-900 text-white hover:bg-neutral-800 transition-all active:scale-95 shadow-lg shadow-neutral-900/20 relative z-10 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-neutral-900"
                   >
                     <Mic className="w-6 h-6" />
                   </button>
