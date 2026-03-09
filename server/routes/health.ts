@@ -6,7 +6,7 @@ const router = express.Router();
  * Health check endpoint
  * No authentication required - used for monitoring and load balancer checks
  */
-router.get('/api/health', (_req: Request, res: Response) => {
+router.get('/health', (_req: Request, res: Response) => {
   try {
     res.status(200).json({
       status: 'ok',

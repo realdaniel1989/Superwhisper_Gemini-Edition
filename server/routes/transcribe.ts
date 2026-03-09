@@ -12,7 +12,7 @@ const upload = multer({ storage: multer.memoryStorage() });
  * Accepts multipart/form-data with audio file
  * Returns SSE stream with transcription chunks
  */
-router.post('/api/transcribe', upload.single('audio'), async (req: Request, res: Response) => {
+router.post('/transcribe', upload.single('audio'), async (req: Request, res: Response) => {
   try {
     // Check if audio file was provided
     const audioFile = req.file;
