@@ -1,14 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Copy, Trash2, Check, Loader2, Clock, History, X, ChevronRight, LogIn, LogOut, Settings, ExternalLink } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Mic, Square, Copy, Trash2, Check, Loader2, Clock, History, X, ChevronRight, LogIn, LogOut, Settings, ExternalLink, AlertCircle } from 'lucide-react';
 import { streamTranscription } from './lib/api';
 import { useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
+import { ToastProvider, useRegisterGlobalToast } from './components/Toast';
+import { toast } from './components/Toast';
+import { saveDictation as saveDictationToDb, loadDictations as loadDictationsFromDb, deleteDictation as deleteDictationFromDb, type DictationRow } from './lib/dictations';
 
 interface Dictation {
   id: string;
   text: string;
   timestamp: number;
   duration: number;
+  hasError?: boolean;
 }
 
 // Setup screen shown when Supabase isn't configured
@@ -77,7 +81,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key`}
   );
 }
 
-export default function App() {
+function App() {
   const { user, loading, isConfigured, signOut } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -103,16 +107,32 @@ export default function App() {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
+  // Load dictations from Supabase when user is authenticated
   useEffect(() => {
-    const saved = localStorage.getItem('dictations');
-    if (saved) {
-      try {
-        setDictations(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse dictations", e);
-      }
+    if (!user) {
+      setDictations([]);
+      return;
     }
-  }, []);
+
+    const loadFromDb = async () => {
+      const { data, error } = await loadDictationsFromDb(user.id);
+      if (error) {
+        console.error("Failed to load dictations:", error);
+        toast("Failed to load dictations. Please refresh the page.");
+        return;
+      }
+      if (data) {
+        setDictations(data.map((row: DictationRow) => ({
+          id: row.id,
+          text: row.text,
+          timestamp: row.timestamp,
+          duration: row.duration,
+        })));
+      }
+    };
+
+    loadFromDb();
+  }, [user]);
 
   // Offline detection - block recording when offline
   useEffect(() => {
@@ -128,23 +148,81 @@ export default function App() {
     };
   }, []);
 
-  const saveDictation = (text: string, duration: number) => {
-    if (!text.trim()) return;
+  const saveDictation = async (text: string, duration: number) => {
+    if (!text.trim() || !user) return;
+
+    // Optimistic update - add to local state immediately
+    const tempId = Date.now().toString();
     const newDictation: Dictation = {
-      id: Date.now().toString(),
+      id: tempId,
       text,
       timestamp: Date.now(),
       duration
     };
-    const updated = [newDictation, ...dictations];
-    setDictations(updated);
-    localStorage.setItem('dictations', JSON.stringify(updated));
+    setDictations((prev) => [newDictation, ...prev]);
+
+    // Save to database in background
+    const { data, error } = await saveDictationToDb(user.id, text, duration);
+
+    if (error) {
+      console.error("Failed to save dictation:", error);
+      // Mark as error in UI
+      setDictations((prev) =>
+        prev.map((d) => d.id === tempId ? { ...d, hasError: true } : d)
+      );
+      toast("Failed to save dictation", {
+        type: 'error',
+        action: {
+          label: 'Retry',
+          onClick: () => retrySave(tempId, text, duration)
+        }
+      });
+    } else if (data) {
+      // Replace temp ID with real database ID
+      setDictations((prev) =>
+        prev.map((d) => d.id === tempId ? { ...d, id: data.id } : d)
+      );
+    }
   };
 
-  const deleteDictation = (id: string) => {
-    const updated = dictations.filter(d => d.id !== id);
-    setDictations(updated);
-    localStorage.setItem('dictations', JSON.stringify(updated));
+  const retrySave = async (tempId: string, text: string, duration: number) => {
+    if (!user) return;
+
+    // Clear error state optimistically
+    setDictations((prev) =>
+      prev.map((d) => d.id === tempId ? { ...d, hasError: false } : d)
+    );
+
+    const { data, error } = await saveDictationToDb(user.id, text, duration);
+
+    if (error) {
+      console.error("Failed to retry save:", error);
+      setDictations((prev) =>
+        prev.map((d) => d.id === tempId ? { ...d, hasError: true } : d)
+      );
+      toast("Failed to save dictation");
+    } else if (data) {
+      setDictations((prev) =>
+        prev.map((d) => d.id === tempId ? { ...d, id: data.id, hasError: false } : d)
+      );
+    }
+  };
+
+  const deleteDictation = async (id: string) => {
+    if (!user) return;
+
+    // Optimistic update - remove from local state immediately
+    const previous = dictations;
+    setDictations((prev) => prev.filter((d) => d.id !== id));
+
+    const { error } = await deleteDictationFromDb(user.id, id);
+
+    if (error) {
+      console.error("Failed to delete dictation:", error);
+      // Restore on error
+      setDictations(previous);
+      toast("Failed to delete dictation");
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -463,15 +541,20 @@ export default function App() {
               ) : (
                 <div className="space-y-1">
                   {dictations.map((d) => (
-                    <div 
-                      key={d.id} 
+                    <div
+                      key={d.id}
                       className="group flex items-center justify-between p-4 rounded-2xl hover:bg-neutral-50 transition-colors cursor-pointer"
                       onClick={() => loadDictation(d)}
                     >
                       <div className="flex-1 min-w-0 pr-4">
-                        <p className="text-neutral-900 font-medium truncate mb-1">
-                          {d.text}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-neutral-900 font-medium truncate">
+                            {d.text}
+                          </p>
+                          {d.hasError && (
+                            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" title="Failed to save" />
+                          )}
+                        </div>
                         <div className="flex items-center text-xs text-neutral-500 space-x-3">
                           <span>{new Date(d.timestamp).toLocaleDateString()} {new Date(d.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                           <span>•</span>
@@ -479,7 +562,19 @@ export default function App() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
+                        {d.hasError && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              retrySave(d.id, d.text, d.duration);
+                            }}
+                            className="p-2 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 shadow-sm transition-colors"
+                            title="Retry save"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
                             deleteDictation(d.id);
@@ -507,5 +602,20 @@ export default function App() {
         onClose={() => setShowAuthModal(false)}
       />
     </div>
+  );
+}
+
+// Inner component that registers global toast
+function AppWithToast() {
+  useRegisterGlobalToast();
+  return <App />;
+}
+
+// Main export wrapped with ToastProvider
+export default function AppRoot() {
+  return (
+    <ToastProvider>
+      <AppWithToast />
+    </ToastProvider>
   );
 }
