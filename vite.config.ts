@@ -8,7 +8,9 @@ export default defineConfig(({mode}) => {
   return {
     plugins: [react(), tailwindcss()],
     define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      // For production, VITE_API_URL should be empty (same-origin requests)
+      // For development, it defaults to http://localhost:3001 in src/lib/api.ts
+      'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || ''),
     },
     resolve: {
       alias: {
