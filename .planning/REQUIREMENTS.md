@@ -29,9 +29,9 @@ Requirements for production deployment. Each maps to roadmap phases.
 
 ### Frontend Deployment
 
-- [ ] **DEPL-01**: React app deployed to Railway
-- [ ] **DEPL-02**: Frontend calls backend API (no direct OpenRouter calls)
-- [ ] **DEPL-03**: Environment variables securely configured
+- [x] **DEPL-01**: React app deployed to Railway
+- [x] **DEPL-02**: Frontend calls backend API (no direct OpenRouter calls)
+- [x] **DEPL-03**: Environment variables securely configured
 
 ## v2 Requirements
 
@@ -71,9 +71,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-01 | Phase 3 | Complete |
 | DATA-02 | Phase 3 | Complete |
 | DATA-03 | Phase 3 | Pending |
-| DEPL-01 | Phase 4 | Pending |
-| DEPL-02 | Phase 4 | Pending |
-| DEPL-03 | Phase 4 | Pending |
+| DEPL-01 | Phase 4 | Complete |
+| DEPL-02 | Phase 4 | Complete |
+| DEPL-03 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 14 total
