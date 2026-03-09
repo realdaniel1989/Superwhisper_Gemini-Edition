@@ -3,20 +3,30 @@
  * Handles authentication and session persistence
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.');
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
+
+// Create client only if configured, otherwise create a dummy client
+// This prevents the app from crashing on startup
+let supabaseClient: SupabaseClient;
+
+if (isSupabaseConfigured) {
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      storage: localStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
+  });
+} else {
+  // Create a mock client that won't crash but won't work either
+  // The app will show a setup message instead
+  supabaseClient = createClient('https://placeholder.supabase.co', 'placeholder-key');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: localStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  }
-});
+export const supabase = supabaseClient;

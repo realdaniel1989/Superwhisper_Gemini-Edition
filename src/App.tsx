@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Copy, Trash2, Check, Loader2, Clock, History, X, ChevronRight, LogIn, LogOut } from 'lucide-react';
+import { Mic, Square, Copy, Trash2, Check, Loader2, Clock, History, X, ChevronRight, LogIn, LogOut, Settings, ExternalLink } from 'lucide-react';
 import { streamTranscription } from './lib/api';
 import { useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
@@ -11,8 +11,74 @@ interface Dictation {
   duration: number;
 }
 
+// Setup screen shown when Supabase isn't configured
+function SetupScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#fcfcfc] p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-neutral-200 p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+            <Settings className="w-5 h-5 text-amber-600" />
+          </div>
+          <h1 className="text-xl font-medium text-neutral-900">Setup Required</h1>
+        </div>
+
+        <p className="text-neutral-600 mb-6">
+          Authentication requires Supabase credentials. Follow these steps to get started:
+        </p>
+
+        <ol className="space-y-4 mb-6">
+          <li className="flex gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-neutral-100 text-neutral-600 text-sm font-medium flex items-center justify-center">1</span>
+            <div>
+              <p className="text-neutral-900 font-medium">Create a Supabase project</p>
+              <a
+                href="https://supabase.com/dashboard/new"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 text-sm flex items-center gap-1 hover:underline"
+              >
+                supabase.com/dashboard/new
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-neutral-100 text-neutral-600 text-sm font-medium flex items-center justify-center">2</span>
+            <div>
+              <p className="text-neutral-900 font-medium">Get your credentials</p>
+              <p className="text-neutral-500 text-sm">Project Settings → API → URL and anon/public key</p>
+            </div>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-neutral-100 text-neutral-600 text-sm font-medium flex items-center justify-center">3</span>
+            <div>
+              <p className="text-neutral-900 font-medium">Create <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-sm">.env</code> file</p>
+              <pre className="mt-2 bg-neutral-50 border border-neutral-200 rounded-lg p-3 text-sm overflow-x-auto">
+{`VITE_SUPABASE_URL=your-project-url
+VITE_SUPABASE_ANON_KEY=your-anon-key`}
+              </pre>
+            </div>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-neutral-100 text-neutral-600 text-sm font-medium flex items-center justify-center">4</span>
+            <div>
+              <p className="text-neutral-900 font-medium">Enable Email Auth</p>
+              <p className="text-neutral-500 text-sm">Authentication → Providers → Email → Enable</p>
+            </div>
+          </li>
+        </ol>
+
+        <p className="text-neutral-500 text-sm">
+          Restart the dev server after creating the <code className="bg-neutral-100 px-1 py-0.5 rounded">.env</code> file.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, isConfigured, signOut } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const [isRecording, setIsRecording] = useState(false);
@@ -223,6 +289,11 @@ export default function App() {
         <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
       </div>
     );
+  }
+
+  // Show setup instructions if Supabase isn't configured
+  if (!isConfigured) {
+    return <SetupScreen />;
   }
 
   return (
