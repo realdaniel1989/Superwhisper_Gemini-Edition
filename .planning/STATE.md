@@ -84,6 +84,10 @@ Recent decisions affecting current work:
    - `.planning/todos/pending/2026-03-09-fix-supabase-email-redirect-url-configuration.md`
    - Email verification links point to localhost:3000 instead of production URL
 
+2. **Add search function to transcription history** (ui)
+   - `.planning/todos/pending/2026-03-09-add-search-function-to-transcription-history.md`
+   - Users need ability to search/filter through past transcriptions
+
 ### Blockers/Concerns
 
 None yet.
