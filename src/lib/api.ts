@@ -2,7 +2,11 @@
  * Frontend API client for backend communication
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// In production, VITE_API_URL should be empty (same-origin requests)
+// Use empty string as valid value, only fallback to localhost for undefined
+const API_URL = import.meta.env.VITE_API_URL !== undefined
+  ? import.meta.env.VITE_API_URL
+  : 'http://localhost:3001';
 
 /**
  * Stream transcription from backend
