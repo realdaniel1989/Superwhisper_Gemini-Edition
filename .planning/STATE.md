@@ -80,7 +80,9 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+1. **Fix Supabase email redirect URL configuration** (auth)
+   - `.planning/todos/pending/2026-03-09-fix-supabase-email-redirect-url-configuration.md`
+   - Email verification links point to localhost:3000 instead of production URL
 
 ### Blockers/Concerns
 
