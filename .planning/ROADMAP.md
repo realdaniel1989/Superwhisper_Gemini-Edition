@@ -71,11 +71,11 @@ Plans:
   1. Frontend is accessible at production URL
   2. Transcription requests go through deployed backend (no direct API calls)
   3. Environment variables are configured securely in Railway
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 04-01: Deploy backend to Railway with environment variables
-- [ ] 04-02: Deploy frontend to Railway with backend URL configuration
+- [ ] 04-01-PLAN.md — Configure Express for static file serving with /api prefix and Railway build/start scripts (Wave 1)
+- [ ] 04-02-PLAN.md — Deploy to Railway and verify end-to-end functionality (Wave 2)
 
 ## Progress
 
