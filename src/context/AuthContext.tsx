@@ -3,9 +3,10 @@
  * Provides user session state and auth methods throughout the app
  */
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { migrateLocalStorage } from '../lib/dictations';
 
 interface AuthContextType {
   user: User | null;
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const migrationRanRef = useRef(false);
 
   useEffect(() => {
     // If Supabase isn't configured, skip auth setup
@@ -44,9 +46,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
+
+      // Migrate localStorage dictations on first sign in
+      if (event === 'SIGNED_IN' && newSession?.user && !migrationRanRef.current) {
+        const localData = localStorage.getItem('dictations');
+        if (localData) {
+          migrationRanRef.current = true;
+          migrateLocalStorage(newSession.user.id)
+            .then(({ migrated, errors }) => {
+              console.log(`Migration complete: ${migrated} dictations migrated, ${errors} errors`);
+            })
+            .catch((err) => {
+              console.error('Migration failed:', err);
+            });
+        }
+      }
     });
 
     return () => {
