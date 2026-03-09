@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Backend API** - Secure transcription proxy with OpenRouter integration
 - [x] **Phase 2: Authentication** - User accounts with Supabase Auth (Complete)
-- [ ] **Phase 3: Database Storage** - Persistent dictations with user ownership (In Progress)
+- [x] **Phase 3: Database Storage** - Persistent dictations with user ownership (Complete)
 - [ ] **Phase 4: Deployment** - Railway deployment for frontend and backend
 
 ## Phase Details
@@ -61,7 +61,7 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Create dictations table schema with RLS policies and database CRUD library (Wave 1)
-- [ ] 03-02-PLAN.md — Replace localStorage with Supabase, add offline detection and toast notifications (Wave 2)
+- [x] 03-02-PLAN.md — Replace localStorage with Supabase, add offline detection and toast notifications (Wave 2)
 
 ### Phase 4: Deployment
 **Goal**: Application is live on Railway with secure configuration.
@@ -86,5 +86,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Backend API | 2/2 | Complete | 01-01, 01-02 |
 | 2. Authentication | 2/2 | Complete | 02-01, 02-02 |
-| 3. Database Storage | 1/2 | In Progress | 03-01 |
+| 3. Database Storage | 2/2 | Complete | 03-01, 03-02 |
 | 4. Deployment | 0/2 | Not started | - |
