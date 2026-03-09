@@ -23,8 +23,8 @@ Requirements for production deployment. Each maps to roadmap phases.
 
 ### Database
 
-- [ ] **DATA-01**: Dictations stored in Supabase database
-- [ ] **DATA-02**: User can only access their own dictations
+- [x] **DATA-01**: Dictations stored in Supabase database
+- [x] **DATA-02**: User can only access their own dictations
 - [ ] **DATA-03**: Dictations synced across devices (via database)
 
 ### Frontend Deployment
@@ -68,8 +68,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BACK-02 | Phase 1 | Complete |
 | BACK-03 | Phase 1 | Complete |
 | BACK-04 | Phase 1 | Complete |
-| DATA-01 | Phase 3 | Pending |
-| DATA-02 | Phase 3 | Pending |
+| DATA-01 | Phase 3 | Complete |
+| DATA-02 | Phase 3 | Complete |
 | DATA-03 | Phase 3 | Pending |
 | DEPL-01 | Phase 4 | Pending |
 | DEPL-02 | Phase 4 | Pending |

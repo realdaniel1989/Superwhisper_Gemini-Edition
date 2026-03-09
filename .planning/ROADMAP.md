@@ -13,8 +13,8 @@ This roadmap transforms a client-side dictation prototype into a secure, multi-u
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Backend API** - Secure transcription proxy with OpenRouter integration
-- [ ] **Phase 2: Authentication** - User accounts with Supabase Auth (In Progress)
-- [ ] **Phase 3: Database Storage** - Persistent dictations with user ownership
+- [x] **Phase 2: Authentication** - User accounts with Supabase Auth (Complete)
+- [ ] **Phase 3: Database Storage** - Persistent dictations with user ownership (In Progress)
 - [ ] **Phase 4: Deployment** - Railway deployment for frontend and backend
 
 ## Phase Details
@@ -47,7 +47,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md — Configure Supabase Auth and add auth context to React app (Wave 1)
-- [ ] 02-02-PLAN.md — Build login, signup, and logout UI components with auth-gated access (Wave 2)
+- [x] 02-02-PLAN.md — Build login, signup, and logout UI components with auth-gated access (Wave 2)
 
 ### Phase 3: Database Storage
 **Goal**: Dictations are stored in Supabase database and synced across devices.
@@ -60,7 +60,7 @@ Plans:
 **Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 03-01-PLAN.md — Create dictations table schema with RLS policies and database CRUD library (Wave 1)
+- [x] 03-01-PLAN.md — Create dictations table schema with RLS policies and database CRUD library (Wave 1)
 - [ ] 03-02-PLAN.md — Replace localStorage with Supabase, add offline detection and toast notifications (Wave 2)
 
 ### Phase 4: Deployment
@@ -85,6 +85,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Backend API | 2/2 | Complete | 01-01, 01-02 |
-| 2. Authentication | 1/2 | In Progress | 02-01 |
-| 3. Database Storage | 0/2 | Not started | - |
+| 2. Authentication | 2/2 | Complete | 02-01, 02-02 |
+| 3. Database Storage | 1/2 | In Progress | 03-01 |
 | 4. Deployment | 0/2 | Not started | - |
