@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import multer from 'multer';
-import { streamTranscription } from '../services/openrouter.js';
+import { streamTranscription } from '../services/gemini.js';
 
 const router = express.Router();
 
