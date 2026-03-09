@@ -26,7 +26,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Success Criteria** (what must be TRUE):
   1. Backend server runs locally and responds to health check endpoint
   2. Transcription endpoint accepts audio and returns streaming transcription text
-  3. OpenRouter API key is only in backend environment (never exposed to frontend)
+  3. OpenRouter API key is only in backend environment (never exposed to the frontend)
   4. Fallback model is used when primary model fails
 **Plans**: 2 plans in 2 waves
 
@@ -57,11 +57,11 @@ Plans:
   1. New dictations are saved to Supabase database automatically
   2. User sees only their own dictations in history
   3. Dictations appear when user logs in from a different device
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 03-01: Create dictations table in Supabase with RLS policies
-- [ ] 03-02: Replace localStorage with Supabase integration in frontend
+- [ ] 03-01-PLAN.md — Create dictations table schema with RLS policies and database CRUD library (Wave 1)
+- [ ] 03-02-PLAN.md — Replace localStorage with Supabase, add offline detection and toast notifications (Wave 2)
 
 ### Phase 4: Deployment
 **Goal**: Application is live on Railway with secure configuration.
