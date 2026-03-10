@@ -1,0 +1,25 @@
+transcribe:1  Failed to load resource: the server responded with a status of 403 (Forbidden)
+index-ChgajuIV.js:197 Transcription error: Error: Transcription request failed: 403
+    at o0 (index-ChgajuIV.js:144:257)
+    at async V (index-ChgajuIV.js:197:2776)
+V @ index-ChgajuIV.js:197
+index-ChgajuIV.js:144  POST https://superwhispergemini-edition-production.up.railway.app/api/transcribe 403 (Forbidden)
+o0 @ index-ChgajuIV.js:144
+V @ index-ChgajuIV.js:197
+Q.me.onstop @ index-ChgajuIV.js:197
+index-ChgajuIV.js:197 Transcription error: Error: Transcription request failed: 403
+    at o0 (index-ChgajuIV.js:144:257)
+    at async V (index-ChgajuIV.js:197:2776)
+V @ index-ChgajuIV.js:197
+await in V
+Q.me.onstop @ index-ChgajuIV.js:197
+index-ChgajuIV.js:144  POST https://superwhispergemini-edition-production.up.railway.app/api/transcribe 403 (Forbidden)
+o0 @ index-ChgajuIV.js:144
+V @ index-ChgajuIV.js:197
+Q.me.onstop @ index-ChgajuIV.js:197
+index-ChgajuIV.js:197 Transcription error: Error: Transcription request failed: 403
+    at o0 (index-ChgajuIV.js:144:257)
+    at async V (index-ChgajuIV.js:197:2776)
+V @ index-ChgajuIV.js:197
+await in V
+Q.me.onstop @ index-ChgajuIV.js:197
