@@ -14,11 +14,18 @@ const TRANSCRIBE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/transcribe`;
  * @returns Full transcribed text
  */
 export async function streamTranscription(audioBlob: Blob): Promise<string> {
-  // Convert Blob to base64
-  const arrayBuffer = await audioBlob.arrayBuffer();
-  const base64 = btoa(
-    new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-  );
+  // Convert Blob to base64 using FileReader (more reliable for binary audio)
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      // Extract base64 part from data URL (after the comma)
+      const base64Data = dataUrl.split(',')[1];
+      resolve(base64Data);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(audioBlob);
+  });
 
   const response = await fetch(TRANSCRIBE_FUNCTION_URL, {
     method: 'POST',
