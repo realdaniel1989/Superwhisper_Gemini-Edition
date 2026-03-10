@@ -1,3 +1,4 @@
+###Console Report
 transcribe:1  Failed to load resource: the server responded with a status of 403 (Forbidden)
 index-ChgajuIV.js:197 Transcription error: Error: Transcription request failed: 403
     at o0 (index-ChgajuIV.js:144:257)
@@ -23,3 +24,18 @@ index-ChgajuIV.js:197 Transcription error: Error: Transcription request failed: 
 V @ index-ChgajuIV.js:197
 await in V
 Q.me.onstop @ index-ChgajuIV.js:197
+
+###Network Report
+transcribe	403	fetch	index-ChgajuIV.js:144	15.0 kB	684 ms
+token?grant_type=refresh_token	200	preflight	Preflight
+0.0 kB	498 ms
+token?grant_type=refresh_token	200	fetch	index-ChgajuIV.js:172	2.5 kB	675 ms
+
+dictations?select=*&user_id=eq.79f752b7-b4fc-4a67-bd83-9a4c84b6b898&order=timestamp.desc	200	preflight	Preflight
+0.0 kB	75 ms
+dictations?select=*&user_id=eq.79f752b7-b4fc-4a67-bd83-9a4c84b6b898&order=timestamp.desc	200	fetch	index-ChgajuIV.js:188	2.3 kB	844 ms
+transcribe	403	fetch	index-ChgajuIV.js:144	15.0 kB	749 ms
+dictations?select=*&user_id=eq.79f752b7-b4fc-4a67-bd83-9a4c84b6b898&order=timestamp.desc	200	fetch	index-ChgajuIV.js:188	2.3 kB	1.14 s
+dictations?select=*&user_id=eq.79f752b7-b4fc-4a67-bd83-9a4c84b6b898&order=timestamp.desc	200	fetch	index-ChgajuIV.js:188	2.3 kB	242 ms
+transcribe	403	fetch	index-ChgajuIV.js:144	15.0 kB	863 ms
+dictations?select=*&user_id=eq.79f752b7-b4fc-4a67-bd83-9a4c84b6b898&order=timestamp.desc	200	fetch	index-ChgajuIV.js:188	2.3 kB	542 ms
