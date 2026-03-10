@@ -2,57 +2,45 @@
  * Frontend API client for backend communication
  */
 
-// In production, VITE_API_URL should be empty (same-origin requests)
-// Use empty string as valid value, only fallback to localhost for undefined
-const API_URL = import.meta.env.VITE_API_URL !== undefined
-  ? import.meta.env.VITE_API_URL
-  : 'http://localhost:3001';
+// Supabase Edge Function configuration
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const TRANSCRIBE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/transcribe`;
 
 /**
- * Stream transcription from backend
+ * Transcribe audio using Supabase Edge Function
+ * Routes through supabase.co to bypass corporate proxy blocking
  * @param audioBlob - Audio blob to transcribe
  * @returns Full transcribed text
  */
 export async function streamTranscription(audioBlob: Blob): Promise<string> {
-  const formData = new FormData();
-  formData.append('audio', audioBlob);
+  // Convert Blob to base64
+  const arrayBuffer = await audioBlob.arrayBuffer();
+  const base64 = btoa(
+    new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+  );
 
-  const response = await fetch(`${API_URL}/api/transcribe`, {
+  const response = await fetch(TRANSCRIBE_FUNCTION_URL, {
     method: 'POST',
-    body: formData
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'apikey': SUPABASE_ANON_KEY
+    },
+    body: JSON.stringify({
+      audio: base64,
+      mimeType: audioBlob.type || 'audio/webm'
+    })
   });
 
   if (!response.ok) {
     throw new Error(`Transcription request failed: ${response.status}`);
   }
 
-  if (!response.body) {
-    throw new Error('No response body from server');
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
   }
 
-  // Parse SSE stream
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let fullText = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n\n');
-    buffer = lines.pop() || '';
-
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const data = JSON.parse(line.slice(6));
-        if (data.text) fullText += data.text;
-        if (data.done) return fullText;
-        if (data.error) throw new Error(data.error);
-      }
-    }
-  }
-
-  return fullText;
+  return data.text;
 }
