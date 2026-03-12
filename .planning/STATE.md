@@ -88,6 +88,10 @@ Recent decisions affecting current work:
    - `.planning/todos/pending/2026-03-09-add-search-function-to-transcription-history.md`
    - Users need ability to search/filter through past transcriptions
 
+3. **Add autostart URL parameter for recording** (ui)
+   - `.planning/todos/pending/2026-03-12-add-autostart-url-parameter-for-recording.md`
+   - Add `?autostart=true` URL param to automatically start recording on page load
+
 ### Blockers/Concerns
 
 None yet.
