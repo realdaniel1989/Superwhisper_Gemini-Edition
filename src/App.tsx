@@ -274,6 +274,19 @@ function App() {
 
       if (text.trim()) {
         saveDictation(text, duration);
+
+        // Auto-copy transcription to clipboard (works in Chrome, Safari blocks without user gesture)
+        try {
+          window.focus();
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            toast("Copied to clipboard", { type: 'success' });
+          }
+        } catch (err) {
+          // Safari requires explicit user gesture for clipboard access
+          // User can manually click the copy button
+          console.log('Auto-copy not available:', err);
+        }
       }
     } catch (error) {
       console.error("Transcription error:", error);
