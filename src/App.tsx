@@ -100,6 +100,7 @@ function App() {
 
   // Autostart state
   const [autostartEnabled, setAutostartEnabled] = useState(true);
+  const [showAutostartPrompt, setShowAutostartPrompt] = useState(false);
   const autostartAttempted = useRef(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -168,12 +169,18 @@ function App() {
         return;
       }
 
-      // If autostart is enabled and user is logged in, start recording
+      // If autostart is enabled and user is logged in, show prompt
+      // (Browser requires user gesture for microphone access)
       if (autostartEnabled) {
-        startRecording();
+        setShowAutostartPrompt(true);
       }
     }
   }, [user, loading, isOnline, autostartEnabled]);
+
+  const handleAutostartConfirm = async () => {
+    setShowAutostartPrompt(false);
+    await startRecording();
+  };
 
   const saveDictation = async (text: string, duration: number) => {
     if (!text.trim() || !user) return;
@@ -653,6 +660,35 @@ function App() {
         isOpen={showAuthModal || (!user && !loading)}
         onClose={() => setShowAuthModal(false)}
       />
+
+      {/* Autostart Prompt Modal - requires user click for microphone access */}
+      {showAutostartPrompt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4 text-center">
+            <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+              <Mic className="w-7 h-7 text-amber-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2">Ready to Record</h3>
+            <p className="text-neutral-500 text-sm mb-6">
+              Click below to start recording. Your browser requires this click to access the microphone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowAutostartPrompt(false)}
+                className="flex-1 px-4 py-2.5 text-neutral-600 hover:text-neutral-900 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAutostartConfirm}
+                className="flex-1 px-4 py-2.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors font-medium"
+              >
+                Start Recording
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
