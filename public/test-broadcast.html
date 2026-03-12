@@ -51,9 +51,27 @@
     }
     .log-entry { margin: 4px 0; }
     .log-entry.error { color: #f87171; }
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 1000;
+    }
+    .toast.show { opacity: 1; }
+    .toast.success { background: #22c55e; color: white; }
+    .toast.info { background: #3b82f6; color: white; }
+    .toast.error { background: #ef4444; color: white; }
   </style>
 </head>
 <body>
+  <div id="toast" class="toast"></div>
+
   <h1>Superwhisper Remote</h1>
 
   <div id="status" class="status idle">Status: Unknown</div>
@@ -71,6 +89,18 @@
     const channel = new BroadcastChannel('superwhisper-recording');
     const statusEl = document.getElementById('status');
     const logEl = document.getElementById('log');
+    const toastEl = document.getElementById('toast');
+
+    let toastTimeout;
+
+    function showToast(message, type = 'info') {
+      toastEl.textContent = message;
+      toastEl.className = `toast ${type} show`;
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, 2000);
+    }
 
     function log(message, isError = false) {
       const entry = document.createElement('div');
@@ -95,9 +125,11 @@
 
       if (type === 'status') {
         updateStatus(recording);
+        showToast(recording ? 'Recording started' : 'Recording stopped', recording ? 'success' : 'info');
       } else if (type === 'error') {
         statusEl.className = 'status error';
         statusEl.textContent = `Error: ${message}`;
+        showToast(message, 'error');
         log(message, true);
       }
     };

@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "Superwhisper Remote",
+  "version": "1.0.0",
+  "description": "Trigger Superwhisper recording from anywhere with a global keyboard shortcut",
+  "permissions": [
+    "tabs",
+    "scripting",
+    "notifications"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "toggle-recording": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+R",
+        "mac": "Command+Option+R"
+      },
+      "description": "Toggle Superwhisper recording"
+    },
+    "start-recording": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S",
+        "mac": "Command+Option+S"
+      },
+      "description": "Start Superwhisper recording"
+    },
+    "stop-recording": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+X",
+        "mac": "Command+Option+X"
+      },
+      "description": "Stop Superwhisper recording"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png"
+    },
+    "default_title": "Superwhisper Remote"
+  }
+}

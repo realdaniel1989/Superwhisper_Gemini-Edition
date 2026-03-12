@@ -183,21 +183,25 @@ function App() {
         case 'start':
           if (!isRecording) {
             await startRecording();
+            toast("Recording started", { type: 'success' });
             channel.postMessage({ type: 'status', recording: true });
           }
           break;
         case 'stop':
           if (isRecording) {
             stopRecording();
+            toast("Recording stopped", { type: 'info' });
             channel.postMessage({ type: 'status', recording: false });
           }
           break;
         case 'toggle':
           if (isRecording) {
             stopRecording();
+            toast("Recording stopped", { type: 'info' });
             channel.postMessage({ type: 'status', recording: false });
           } else {
             await startRecording();
+            toast("Recording started", { type: 'success' });
             channel.postMessage({ type: 'status', recording: true });
           }
           break;
@@ -234,8 +238,10 @@ function App() {
 
         if (isRecording) {
           stopRecording();
+          toast("Recording stopped", { type: 'info' });
         } else {
           await startRecording();
+          toast("Recording started", { type: 'success' });
         }
       }
     };
@@ -371,12 +377,15 @@ function App() {
           window.focus();
           if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(text);
-            toast("Copied to clipboard", { type: 'success' });
+            toast("Transcription complete - copied to clipboard", { type: 'success' });
+          } else {
+            toast("Transcription complete", { type: 'success' });
           }
         } catch (err) {
           // Safari requires explicit user gesture for clipboard access
           // User can manually click the copy button
           console.log('Auto-copy not available:', err);
+          toast("Transcription complete", { type: 'success' });
         }
       }
     } catch (error) {
