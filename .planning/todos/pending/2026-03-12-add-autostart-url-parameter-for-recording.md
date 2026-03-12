@@ -18,16 +18,31 @@ Currently, users must manually click the record button each time.
 
 ## Solution
 
-Add URL parameter `autostart=true` check on page load in App.tsx. When present, automatically call `startRecording()` function.
+Add URL parameter `autostart=true` check on page load in App.tsx, plus a toggle button for user control.
 
-Implementation pattern:
-```javascript
-const params = new URLSearchParams(window.location.search);
-if (params.get('autostart') === 'true') {
-  startRecording();
-}
+**Features:**
+1. **URL parameter detection** - `?autostart=true` triggers recording on page load
+2. **Toggle button** - UI control to turn autostart on/off
+3. **Auth handling** - If user not logged in, autostart is OFF until they manually toggle it ON
+
+**Implementation:**
+- Add `autostartEnabled` state (default: true if logged in, false if not)
+- Add toggle button in UI (could be near record button or in a settings area)
+- Add useEffect that checks URL param + autostartEnabled state before triggering
+- Keep URL param in address bar (don't clear it)
+
+**Logic flow:**
+```
+On page load with ?autostart=true:
+  - If loading → wait
+  - If offline → skip
+  - If not logged in → set autostartEnabled = false, don't record
+  - If logged in AND autostartEnabled → startRecording()
 ```
 
-This should be added in a `useEffect` hook in the App component, ensuring it runs after the component mounts and auth state is resolved.
+**UI considerations:**
+- Toggle could be a small switch/button near the mic button
+- Visual indicator when autostart is enabled
+- Maybe a toast when autostart is disabled due to not being logged in
 
 URL example: `https://superwhispergemini-edition-production.up.railway.app/?autostart=true`
