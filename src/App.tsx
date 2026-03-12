@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, Square, Copy, Trash2, Check, Loader2, Clock, History, X, ChevronRight, LogIn, LogOut, Settings, ExternalLink, AlertCircle } from 'lucide-react';
+import { Mic, Square, Copy, Trash2, Check, Loader2, Clock, History, X, ChevronRight, LogIn, LogOut, Settings, ExternalLink, AlertCircle, Zap } from 'lucide-react';
 import { streamTranscription } from './lib/api';
 import { useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
@@ -98,6 +98,10 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
+  // Autostart state
+  const [autostartEnabled, setAutostartEnabled] = useState(true);
+  const autostartAttempted = useRef(false);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
@@ -147,6 +151,29 @@ function App() {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // Autostart recording from URL parameter
+  useEffect(() => {
+    // Skip if already attempted, still loading, or offline
+    if (autostartAttempted.current || loading || !isOnline) return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('autostart') === 'true') {
+      autostartAttempted.current = true;
+
+      // If not logged in, disable autostart and notify user
+      if (!user) {
+        setAutostartEnabled(false);
+        toast("Autostart disabled - log in and toggle to enable", { type: 'info' });
+        return;
+      }
+
+      // If autostart is enabled and user is logged in, start recording
+      if (autostartEnabled) {
+        startRecording();
+      }
+    }
+  }, [user, loading, isOnline, autostartEnabled]);
 
   const saveDictation = async (text: string, duration: number) => {
     if (!text.trim() || !user) return;
@@ -482,7 +509,20 @@ function App() {
                     <Clock className="w-4 h-4 opacity-70" />
                     <span className="font-mono text-sm">{formatTime(recordingTime)}</span>
                   </div>
-                ) : null}
+                ) : (
+                  <button
+                    onClick={() => setAutostartEnabled(!autostartEnabled)}
+                    className={`flex items-center space-x-2 px-3 py-1.5 rounded-full transition-all ${
+                      autostartEnabled
+                        ? 'bg-amber-50 text-amber-600 border border-amber-200'
+                        : 'bg-neutral-100 text-neutral-400 border border-neutral-200'
+                    }`}
+                    title={autostartEnabled ? 'Autostart enabled - recording will auto-start with ?autostart=true' : 'Autostart disabled'}
+                  >
+                    <Zap className={`w-4 h-4 ${autostartEnabled ? 'fill-current' : ''}`} />
+                    <span className="text-xs font-medium">Auto</span>
+                  </button>
+                )}
               </div>
               
               <div className="flex items-center justify-center relative">
