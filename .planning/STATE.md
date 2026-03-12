@@ -96,6 +96,10 @@ Recent decisions affecting current work:
    - `.planning/todos/pending/2026-03-12-explore-event-listener-for-external-recording-trigger.md`
    - Research ways to trigger recording without visiting the page (hotkeys, extensions, etc.)
 
+5. **Auto-copy transcription on recording complete** (ui)
+   - `.planning/todos/pending/2026-03-12-auto-copy-transcription-on-recording-complete.md`
+   - Automatically copy transcription to clipboard when recording finishes for seamless paste workflow
+
 ### Blockers/Concerns
 
 None yet.
