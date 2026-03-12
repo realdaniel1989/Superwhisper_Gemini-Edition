@@ -295,11 +295,16 @@ function App() {
         }
       });
 
-      // Use consistent codec across browsers (WebM/Opus preferred)
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : 'audio/webm';
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      // Determine supported MIME type (browser compatibility)
+      const mimeTypes = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/mp4',
+        'audio/ogg;codecs=opus',
+        '' // Let browser choose as fallback
+      ];
+      const mimeType = mimeTypes.find(type => !type || MediaRecorder.isTypeSupported(type)) || '';
+      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
