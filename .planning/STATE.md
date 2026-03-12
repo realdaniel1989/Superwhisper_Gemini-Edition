@@ -92,6 +92,10 @@ Recent decisions affecting current work:
    - `.planning/todos/pending/2026-03-12-add-autostart-url-parameter-for-recording.md`
    - Add `?autostart=true` URL param to automatically start recording on page load
 
+4. **Explore event listener for external recording trigger** (ui)
+   - `.planning/todos/pending/2026-03-12-explore-event-listener-for-external-recording-trigger.md`
+   - Research ways to trigger recording without visiting the page (hotkeys, extensions, etc.)
+
 ### Blockers/Concerns
 
 None yet.
