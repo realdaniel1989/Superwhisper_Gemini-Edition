@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Superwhisper Remote Control</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+    .status {
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+    .status.idle { background: #e5e5e5; color: #666; }
+    .status.recording { background: #fee2e2; color: #dc2626; }
+    .status.error { background: #fef3c7; color: #d97706; }
+    .buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      flex: 1;
+      min-width: 100px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    button:active { transform: scale(0.97); }
+    .start { background: #22c55e; color: white; }
+    .stop { background: #ef4444; color: white; }
+    .toggle { background: #3b82f6; color: white; }
+    .status-btn { background: #6b7280; color: white; }
+    .log {
+      margin-top: 20px;
+      padding: 10px;
+      background: #1f2937;
+      color: #10b981;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .log-entry { margin: 4px 0; }
+    .log-entry.error { color: #f87171; }
+  </style>
+</head>
+<body>
+  <h1>Superwhisper Remote</h1>
+
+  <div id="status" class="status idle">Status: Unknown</div>
+
+  <div class="buttons">
+    <button class="start" onclick="sendCommand('start')">Start</button>
+    <button class="stop" onclick="sendCommand('stop')">Stop</button>
+    <button class="toggle" onclick="sendCommand('toggle')">Toggle</button>
+    <button class="status-btn" onclick="sendCommand('status')">Check Status</button>
+  </div>
+
+  <div id="log" class="log"></div>
+
+  <script>
+    const channel = new BroadcastChannel('superwhisper-recording');
+    const statusEl = document.getElementById('status');
+    const logEl = document.getElementById('log');
+
+    function log(message, isError = false) {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry' + (isError ? ' error' : '');
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logEl.prepend(entry);
+    }
+
+    function updateStatus(recording) {
+      if (recording) {
+        statusEl.className = 'status recording';
+        statusEl.textContent = 'Status: Recording';
+      } else {
+        statusEl.className = 'status idle';
+        statusEl.textContent = 'Status: Idle';
+      }
+    }
+
+    channel.onmessage = (event) => {
+      const { type, recording, message } = event.data;
+      log(`Received: ${JSON.stringify(event.data)}`);
+
+      if (type === 'status') {
+        updateStatus(recording);
+      } else if (type === 'error') {
+        statusEl.className = 'status error';
+        statusEl.textContent = `Error: ${message}`;
+        log(message, true);
+      }
+    };
+
+    function sendCommand(action) {
+      log(`Sending: ${action}`);
+      channel.postMessage({ action });
+    }
+
+    // Initial status check
+    sendCommand('status');
+  </script>
+</body>
+</html>

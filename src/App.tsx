@@ -103,6 +103,9 @@ function App() {
   const [showAutostartPrompt, setShowAutostartPrompt] = useState(false);
   const autostartAttempted = useRef(false);
 
+  // Broadcast Channel for external recording trigger
+  const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
@@ -152,6 +155,94 @@ function App() {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // Broadcast Channel for external recording trigger
+  useEffect(() => {
+    // Check if BroadcastChannel is supported
+    if (!('BroadcastChannel' in window)) return;
+
+    const channel = new BroadcastChannel('superwhisper-recording');
+    broadcastChannelRef.current = channel;
+
+    channel.onmessage = async (event) => {
+      const { action } = event.data;
+
+      // Ignore if offline
+      if (!isOnline) {
+        channel.postMessage({ type: 'error', message: 'Offline - cannot record' });
+        return;
+      }
+
+      // Require user to be logged in
+      if (!user) {
+        channel.postMessage({ type: 'error', message: 'Not logged in' });
+        return;
+      }
+
+      switch (action) {
+        case 'start':
+          if (!isRecording) {
+            await startRecording();
+            channel.postMessage({ type: 'status', recording: true });
+          }
+          break;
+        case 'stop':
+          if (isRecording) {
+            stopRecording();
+            channel.postMessage({ type: 'status', recording: false });
+          }
+          break;
+        case 'toggle':
+          if (isRecording) {
+            stopRecording();
+            channel.postMessage({ type: 'status', recording: false });
+          } else {
+            await startRecording();
+            channel.postMessage({ type: 'status', recording: true });
+          }
+          break;
+        case 'status':
+          // Respond to status query
+          channel.postMessage({ type: 'status', recording: isRecording });
+          break;
+      }
+    };
+
+    // Expose global helper for console/bookmarklet use
+    (window as any).superwhisper = {
+      start: () => channel.postMessage({ action: 'start' }),
+      stop: () => channel.postMessage({ action: 'stop' }),
+      toggle: () => channel.postMessage({ action: 'toggle' }),
+      status: () => channel.postMessage({ action: 'status' }),
+    };
+
+    return () => {
+      channel.close();
+      delete (window as any).superwhisper;
+    };
+  }, [isRecording, isOnline, user]);
+
+  // Keyboard shortcut for recording toggle (Cmd/Ctrl + Shift + R)
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      // Cmd+Shift+R on Mac, Ctrl+Shift+R on Windows/Linux
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+
+        // Ignore if offline or not logged in
+        if (!isOnline || !user) return;
+
+        if (isRecording) {
+          stopRecording();
+        } else {
+          await startRecording();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isRecording, isOnline, user]);
 
   // Autostart recording from URL parameter
   useEffect(() => {
