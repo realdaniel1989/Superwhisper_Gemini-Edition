@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Copy, Trash2, Check, Loader2, Clock, Zap } from 'lucide-react';
 import { streamTranscription } from './lib/api';
 import { ToastProvider, useRegisterGlobalToast } from './components/Toast';
 import { toast } from './components/Toast';
@@ -12,7 +11,6 @@ function App() {
   const [livePreview, setLivePreview] = useState('');
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [audioLevel, setAudioLevel] = useState(0);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   // Autostart state
@@ -27,19 +25,27 @@ function App() {
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
   const recognitionRef = useRef<any>(null);
-  
+
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const meterRef = useRef<HTMLDivElement | null>(null);
+  const wavePointsRef = useRef<number[]>([]);
 
-  // Offline detection - block recording when offline
+  // Derived display state
+  const displayState: 'idle' | 'recording' | 'transcribing' | 'result' =
+    isRecording ? 'recording'
+    : isTranscribing && !transcription ? 'transcribing'
+    : transcription ? 'result'
+    : 'idle';
+
+  // Offline detection
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -56,7 +62,6 @@ function App() {
     channel.onmessage = async (event) => {
       const { action } = event.data;
 
-      // Ignore if offline
       if (!isOnline) {
         channel.postMessage({ type: 'error', message: 'Offline - cannot record' });
         return;
@@ -89,13 +94,11 @@ function App() {
           }
           break;
         case 'status':
-          // Respond to status query
           channel.postMessage({ type: 'status', recording: isRecording });
           break;
       }
     };
 
-    // Expose global helper for console/bookmarklet use
     (window as any).superwhisper = {
       start: () => channel.postMessage({ action: 'start' }),
       stop: () => channel.postMessage({ action: 'stop' }),
@@ -112,13 +115,9 @@ function App() {
   // Keyboard shortcut for recording toggle (Cmd/Ctrl + Shift + R)
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      // Cmd+Shift+R on Mac, Ctrl+Shift+R on Windows/Linux
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
         e.preventDefault();
-
-        // Ignore if offline
         if (!isOnline) return;
-
         if (isRecording) {
           stopRecording();
           toast("Recording stopped", { type: 'success' });
@@ -135,20 +134,128 @@ function App() {
 
   // Autostart recording from URL parameter
   useEffect(() => {
-    // Skip if already attempted or offline
     if (autostartAttempted.current || !isOnline) return;
 
     const params = new URLSearchParams(window.location.search);
     if (params.get('autostart') === 'true') {
       autostartAttempted.current = true;
 
-      // If autostart is enabled, show prompt
-      // (Browser requires user gesture for microphone access)
       if (autostartEnabled) {
         setShowAutostartPrompt(true);
       }
     }
   }, [isOnline, autostartEnabled]);
+
+  // Waveform oscilloscope rendering
+  useEffect(() => {
+    if (!isRecording || !canvasRef.current || !analyserRef.current) return;
+
+    const canvas = canvasRef.current;
+    const analyser = analyserRef.current;
+    const ctx = canvas.getContext('2d')!;
+    const parent = canvas.parentElement!;
+    const bufferLength = analyser.fftSize;
+    const dataArray = new Uint8Array(bufferLength);
+    const SPEED = 1.0;
+
+    wavePointsRef.current = [];
+
+    function resize() {
+      const r = parent.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return;
+      canvas.width = r.width * devicePixelRatio;
+      canvas.height = r.height * devicePixelRatio;
+      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    }
+    resize();
+
+    function draw() {
+      analyser.getByteTimeDomainData(dataArray);
+
+      const w = parent.getBoundingClientRect().width;
+      const h = parent.getBoundingClientRect().height;
+      if (w === 0 || h === 0) {
+        animationFrameRef.current = requestAnimationFrame(draw);
+        return;
+      }
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Take center sample for scrolling trace
+      const center = dataArray[Math.floor(bufferLength / 2)];
+      const sample = (center - 128) / 128;
+      wavePointsRef.current.push(sample);
+      if (wavePointsRef.current.length > Math.ceil(w / SPEED) + 50) {
+        wavePointsRef.current.shift();
+      }
+
+      // Update level meter via RMS
+      let sum = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        const v = (dataArray[i] - 128) / 128;
+        sum += v * v;
+      }
+      const rms = Math.sqrt(sum / bufferLength);
+      const level = Math.min(7, Math.max(0, Math.round(rms * 14)));
+
+      if (meterRef.current) {
+        const bars = meterRef.current.children;
+        for (let i = 0; i < bars.length; i++) {
+          const bar = bars[i] as HTMLElement;
+          bar.classList.toggle('on', i < level);
+          bar.classList.toggle('hot', i < level && i >= 5);
+        }
+      }
+
+      const points = wavePointsRef.current;
+      const midY = h / 2;
+      const amp = h * 0.32;
+
+      // Faint glow trail
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = 'rgba(198, 247, 78, 0.10)';
+      ctx.beginPath();
+      for (let i = 0; i < points.length; i++) {
+        const x = w - (points.length - 1 - i) * SPEED;
+        const y = midY + points[i] * amp;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Sharp main trace
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = '#c6f74e';
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      for (let i = 0; i < points.length; i++) {
+        const x = w - (points.length - 1 - i) * SPEED;
+        const y = midY + points[i] * amp;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Leading dot
+      const lastY = midY + points[points.length - 1] * amp;
+      ctx.fillStyle = '#c6f74e';
+      ctx.shadowColor = 'rgba(198, 247, 78, 0.6)';
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.arc(w - 1, lastY, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      animationFrameRef.current = requestAnimationFrame(draw);
+    }
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animationFrameRef.current!);
+      wavePointsRef.current = [];
+    };
+  }, [isRecording]);
 
   const handleAutostartConfirm = async () => {
     setShowAutostartPrompt(false);
@@ -161,6 +268,13 @@ function App() {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
+  const formatTimeFull = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
   const transcribeAudio = async (blob: Blob, duration: number) => {
     setIsTranscribing(true);
     setTranscription('');
@@ -169,18 +283,15 @@ function App() {
       setTranscription(text);
 
       if (text.trim()) {
-        // Auto-copy transcription to clipboard (works in Chrome, Safari blocks without user gesture)
         try {
           window.focus();
           if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(text);
-            toast("Transcription complete - copied to clipboard", { type: 'success' });
+            toast("Transcription complete — copied to clipboard", { type: 'success' });
           } else {
             toast("Transcription complete", { type: 'success' });
           }
         } catch (err) {
-          // Safari requires explicit user gesture for clipboard access
-          // User can manually click the copy button
           console.log('Auto-copy not available:', err);
           toast("Transcription complete", { type: 'success' });
         }
@@ -196,7 +307,6 @@ function App() {
 
   const startRecording = async () => {
     try {
-      // Request high-quality audio
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -205,19 +315,19 @@ function App() {
         }
       });
 
-      // Determine supported MIME type (browser compatibility)
       const mimeTypes = [
         'audio/webm;codecs=opus',
         'audio/webm',
         'audio/mp4',
         'audio/ogg;codecs=opus',
-        '' // Let browser choose as fallback
+        ''
       ];
       const mimeType = mimeTypes.find(type => !type || MediaRecorder.isTypeSupported(type)) || '';
       const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
+      // Audio analysis — analyser ref must be set before setIsRecording
       const audioContext = new AudioContext();
       audioContextRef.current = audioContext;
       const analyser = audioContext.createAnalyser();
@@ -225,15 +335,6 @@ function App() {
       analyserRef.current = analyser;
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
-
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      const updateAudioLevel = () => {
-        analyser.getByteFrequencyData(dataArray);
-        const average = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
-        setAudioLevel(average);
-        animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
-      };
-      updateAudioLevel();
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -246,7 +347,7 @@ function App() {
         setAudioBlob(audioBlob);
         transcribeAudio(audioBlob, recordingTime);
         stream.getTracks().forEach(track => track.stop());
-        
+
         if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
         if (audioContextRef.current) audioContextRef.current.close();
       };
@@ -256,13 +357,13 @@ function App() {
       setRecordingTime(0);
       setTranscription('');
       setLivePreview('');
-      
+
       if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-        
+
         recognition.onresult = (event: any) => {
           let interimTranscript = '';
           let finalTranscript = '';
@@ -275,7 +376,7 @@ function App() {
           }
           setLivePreview(finalTranscript + interimTranscript);
         };
-        
+
         try {
           recognition.start();
           recognitionRef.current = recognition;
@@ -283,7 +384,7 @@ function App() {
           console.error("Speech recognition error", e);
         }
       }
-      
+
       timerRef.current = window.setInterval(() => {
         setRecordingTime((prev) => prev + 1);
       }, 1000);
@@ -329,153 +430,245 @@ function App() {
     setRecordingTime(0);
   };
 
+  // Hero content per state
+  const heroContent: Record<string, { label: string; headline: React.ReactNode }> = {
+    idle:        { label: 'Standby',   headline: <>Speak, and <em>I&rsquo;ll listen</em>.</> },
+    recording:   { label: 'Now recording', headline: <><span className="signal">Listening</span> closely.</> },
+    transcribing:{ label: 'Processing',    headline: <>Turning sound <em>into words</em>.</> },
+    result:      { label: 'Complete',       headline: <><span className="accent">Transcribed.</span> Yours to keep.</> },
+  };
+
+  const hero = heroContent[displayState];
+
   return (
-    <div className="min-h-screen bg-[#fcfcfc] text-neutral-900 font-sans flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-neutral-100 to-transparent -z-10" />
-      
-      <div className="w-full max-w-3xl space-y-8 relative z-10">
-        <div>
-          <h1 className="text-2xl font-medium tracking-tight text-neutral-900 flex items-center gap-2">
-            <Mic className="w-6 h-6 text-neutral-400" />
-            Dictate
-          </h1>
-        </div>
-        
-        <div className="bg-white rounded-3xl shadow-sm border border-neutral-200/60 overflow-hidden">
-          <div className="p-8 min-h-[400px] flex flex-col">
-            {isTranscribing && !transcription ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-neutral-400 space-y-6">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-20 animate-pulse" />
-                  <Loader2 className="w-10 h-10 animate-spin text-blue-500 relative z-10" />
-                </div>
-                <p className="text-sm font-medium tracking-wide uppercase text-neutral-500">Processing audio...</p>
-              </div>
-            ) : (transcription || isRecording || livePreview) ? (
-              <textarea
-                value={isRecording ? livePreview : transcription}
-                onChange={(e) => setTranscription(e.target.value)}
-                readOnly={isRecording || isTranscribing}
-                className={`flex-1 w-full resize-none outline-none text-xl leading-relaxed bg-transparent placeholder:text-neutral-300 ${isRecording ? 'text-neutral-400' : 'text-neutral-800'}`}
-                placeholder={isRecording ? "Listening..." : "Your transcription will appear here..."}
-              />
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-neutral-300 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-neutral-50 flex items-center justify-center border border-neutral-100">
-                  <Mic className="w-8 h-8 text-neutral-200" />
-                </div>
-                <p className="text-lg font-light">Ready to record</p>
-              </div>
-            )}
+    <>
+      <main className="page">
+
+        {/* ===== TOP BAR ===== */}
+        <header className="top-bar">
+          <div className="brand">
+            <div className="brand-mark" />
+            <div className="brand-name">Jedi <em>&middot;</em> Whispers</div>
           </div>
-          
-          <div className="bg-neutral-50/50 border-t border-neutral-100 p-6 flex items-center justify-between">
-            <div className="flex items-center space-x-4 w-32">
-              {isRecording ? (
-                <div className="flex items-center space-x-3 text-red-500 bg-red-50 px-3 py-1.5 rounded-full border border-red-100">
-                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  <span className="font-mono text-sm font-medium">{formatTime(recordingTime)}</span>
+          <div className="session-meta">
+            <span>DICTATION</span>
+            <span className="dot" />
+            <span>whisper-large-v3</span>
+          </div>
+          <div className="top-bar-right">
+            <span>Record</span>
+            <span className="kbd">⌘</span>
+            <span className="kbd">⇧</span>
+            <span className="kbd">R</span>
+          </div>
+        </header>
+
+        {/* ===== HERO ===== */}
+        <section className="hero">
+          <div className="hero-label">{hero.label}</div>
+          <h1 className="hero-headline">{hero.headline}</h1>
+        </section>
+
+        {/* ===== SURFACE CARD ===== */}
+        <section className="surface">
+
+          {/* Strip */}
+          <div className="surface-strip">
+            <span className={`strip-status${displayState === 'recording' ? ' live' : displayState === 'transcribing' ? ' work' : displayState === 'result' ? ' done' : ''}`}>
+              <span className="dot" />
+              <span>{displayState === 'idle' ? 'STANDBY' : displayState === 'recording' ? 'RECORDING' : displayState === 'transcribing' ? 'TRANSCRIBING' : 'COMPLETE'}</span>
+            </span>
+            <span className="strip-center">Take 01 &middot; 48kHz &middot; MONO</span>
+            <span className={`strip-timer${displayState === 'recording' ? ' live' : ''}`}>
+              {formatTimeFull(recordingTime)}
+            </span>
+          </div>
+
+          {/* Oscilloscope (recording only) */}
+          {isRecording && (
+            <div className="scope">
+              <canvas ref={canvasRef} />
+              <div className="scope-axis">CH 01 &middot; INPUT</div>
+              <div className="scope-meter">
+                <span>LVL</span>
+                <div className="meter-bars" ref={meterRef}>
+                  <div className="meter-bar" style={{ height: 3 }} />
+                  <div className="meter-bar" style={{ height: 5 }} />
+                  <div className="meter-bar" style={{ height: 7 }} />
+                  <div className="meter-bar" style={{ height: 9 }} />
+                  <div className="meter-bar" style={{ height: 11 }} />
+                  <div className="meter-bar" style={{ height: 13 }} />
+                  <div className="meter-bar" style={{ height: 14 }} />
                 </div>
-              ) : (audioBlob || transcription) ? (
-                 <div className="flex items-center space-x-2 text-neutral-500 px-3 py-1.5">
-                  <Clock className="w-4 h-4 opacity-70" />
-                  <span className="font-mono text-sm">{formatTime(recordingTime)}</span>
-                </div>
-              ) : (
+              </div>
+            </div>
+          )}
+
+          {/* ===== CONTENT STATES ===== */}
+
+          {/* Idle */}
+          {displayState === 'idle' && (
+            <div className="idle-state">
+              <div className="idle-meta">No active recording</div>
+              <div className="idle-prompt">
+                Hit the dial below, or use the shortcut. <em>Anything you say will be set down.</em>
+              </div>
+              <div className="idle-hint">Auto-stops after 4s of silence.</div>
+            </div>
+          )}
+
+          {/* Recording — live preview */}
+          {displayState === 'recording' && (
+            <div className="transcript-body">
+              <p className="transcript-text draft">
+                {livePreview || 'Listening...'}<span className="caret" />
+              </p>
+            </div>
+          )}
+
+          {/* Transcribing */}
+          {displayState === 'transcribing' && (
+            <div className="transcribing-state">
+              <div className="transcribing-label">Transcribing <em>your voice</em>&hellip;</div>
+              <div className="progress-track" />
+              <div className="transcribing-meta">
+                <span>whisper &middot; large-v3</span>
+                <span>{recordingTime} sec audio</span>
+              </div>
+            </div>
+          )}
+
+          {/* Result */}
+          {displayState === 'result' && (
+            <div className="transcript-body">
+              <textarea
+                value={transcription}
+                onChange={(e) => setTranscription(e.target.value)}
+                className="transcript-text"
+              />
+            </div>
+          )}
+
+          {/* ===== CONTROLS ===== */}
+          <div className="controls">
+            {/* Left */}
+            <div className="control-left">
+              {displayState === 'idle' && (
                 <button
                   onClick={() => setAutostartEnabled(!autostartEnabled)}
-                  className={`flex items-center space-x-2 px-3 py-1.5 rounded-full transition-all ${
-                    autostartEnabled
-                      ? 'bg-amber-50 text-amber-600 border border-amber-200'
-                      : 'bg-neutral-100 text-neutral-400 border border-neutral-200'
-                  }`}
-                  title={autostartEnabled ? 'Autostart enabled - recording will auto-start with ?autostart=true' : 'Autostart disabled'}
+                  className={`pill${autostartEnabled ? ' accent' : ''}`}
+                  title={autostartEnabled ? 'Autostart enabled' : 'Autostart disabled'}
                 >
-                  <Zap className={`w-4 h-4 ${autostartEnabled ? 'fill-current' : ''}`} />
-                  <span className="text-xs font-medium">Auto</span>
+                  <span className="ico">
+                    <svg viewBox="0 0 16 16" fill="none" width="10" height="10">
+                      <path d="M9 2L3 9h4l-1 5 6-7H8l1-5z" fill="currentColor" />
+                    </svg>
+                  </span>
+                  AUTO-START
                 </button>
+              )}
+
+              {displayState === 'recording' && (
+                <div className="timer-tag live">
+                  <span className="lbl">REC</span>
+                  <span>{formatTime(recordingTime)}</span>
+                </div>
+              )}
+
+              {(displayState === 'transcribing' || displayState === 'result') && (
+                <div className="timer-tag">
+                  <span className="lbl">LEN</span>
+                  <span>{formatTime(recordingTime)}</span>
+                </div>
               )}
             </div>
-            
-            <div className="flex items-center justify-center relative">
-              {isRecording && (
-                <div 
-                  className="absolute inset-0 bg-red-500 rounded-full opacity-20 transition-transform duration-75 ease-out pointer-events-none"
-                  style={{ transform: `scale(${1 + (audioLevel / 255) * 0.8})` }}
-                />
-              )}
-              {isRecording ? (
-                <button
-                  onClick={stopRecording}
-                  className="w-16 h-16 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-all active:scale-95 shadow-lg shadow-red-500/30 relative z-10"
-                >
-                  <Square className="w-6 h-6 fill-current" />
-                </button>
-              ) : (
-                <button
-                  onClick={startRecording}
-                  disabled={!isOnline}
-                  title={isOnline ? "Start recording" : "Recording unavailable - you're offline"}
-                  className="w-16 h-16 flex items-center justify-center rounded-full bg-neutral-900 text-white hover:bg-neutral-800 transition-all active:scale-95 shadow-lg shadow-neutral-900/20 relative z-10 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-neutral-900"
-                >
-                  <Mic className="w-6 h-6" />
-                </button>
-              )}
+
+            {/* Center — record dial */}
+            <div className="record-wrap">
+              <button
+                className={`record-btn${isRecording ? ' live' : ''}`}
+                onClick={isRecording ? stopRecording : isOnline ? startRecording : undefined}
+                disabled={!isRecording && !isOnline}
+                aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+              >
+                <span className="record-disc">
+                  {!isRecording && (
+                    <svg viewBox="0 0 24 24">
+                      <rect x="9" y="3" width="6" height="11" rx="3" />
+                      <path d="M5 11v1a7 7 0 0 0 14 0v-1" />
+                      <line x1="12" y1="19" x2="12" y2="22" />
+                    </svg>
+                  )}
+                </span>
+              </button>
+              <span className={`record-label${isRecording ? ' live' : ''}`}>
+                {isRecording ? 'STOP' : displayState === 'transcribing' ? 'PROCESSING' : 'RECORD'}
+              </span>
             </div>
-            
-            <div className="flex items-center justify-end space-x-2 w-32">
-               {transcription && (
-                 <>
-                   <button 
-                     onClick={copyToClipboard} 
-                     className="p-2.5 text-neutral-500 hover:text-neutral-900 transition-colors rounded-full hover:bg-neutral-200/50"
-                     title="Copy to clipboard"
-                   >
-                     {copied ? <Check className="w-5 h-5 text-emerald-500" /> : <Copy className="w-5 h-5" />}
-                   </button>
-                   <button 
-                     onClick={clearAll} 
-                     className="p-2.5 text-neutral-500 hover:text-red-500 transition-colors rounded-full hover:bg-red-50"
-                     title="Clear"
-                   >
-                     <Trash2 className="w-5 h-5" />
-                   </button>
-                 </>
-               )}
+
+            {/* Right */}
+            <div className="control-right">
+              {displayState === 'result' && (
+                <>
+                  <button className="icon-btn" onClick={copyToClipboard} title="Copy to clipboard">
+                    {copied ? (
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24">
+                        <rect x="9" y="9" width="11" height="11" rx="1" />
+                        <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                      </svg>
+                    )}
+                  </button>
+                  <button className="icon-btn danger" onClick={clearAll} title="Discard">
+                    <svg viewBox="0 0 24 24">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                    </svg>
+                  </button>
+                </>
+              )}
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Autostart Prompt Modal - requires user click for microphone access */}
+        {/* ===== FOOTER ===== */}
+        <footer className="footer">
+          <span>Jedi Whispers</span>
+          <span className="center">&mdash; set in Geist &amp; Instrument Serif &mdash;</span>
+          <span>v 0.4.7</span>
+        </footer>
+
+      </main>
+
+      {/* ===== AUTOSTART MODAL ===== */}
       {showAutostartPrompt && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4 text-center">
-            <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-              <Mic className="w-7 h-7 text-amber-600" />
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-icon">
+              <svg viewBox="0 0 24 24" width="28" height="28">
+                <rect x="9" y="3" width="6" height="11" rx="3" />
+                <path d="M5 11v1a7 7 0 0 0 14 0v-1" />
+                <line x1="12" y1="19" x2="12" y2="22" />
+              </svg>
             </div>
-            <h3 className="text-lg font-semibold text-neutral-900 mb-2">Ready to Record</h3>
-            <p className="text-neutral-500 text-sm mb-6">
+            <h3 className="modal-title">Ready to Record</h3>
+            <p className="modal-body">
               Click below to start recording. Your browser requires this click to access the microphone.
             </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowAutostartPrompt(false)}
-                className="flex-1 px-4 py-2.5 text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
+            <div className="modal-actions">
+              <button onClick={() => setShowAutostartPrompt(false)} className="modal-btn">
                 Cancel
               </button>
-              <button
-                onClick={handleAutostartConfirm}
-                className="flex-1 px-4 py-2.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors font-medium"
-              >
+              <button onClick={handleAutostartConfirm} className="modal-btn primary">
                 Start Recording
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 

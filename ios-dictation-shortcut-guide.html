@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superwhisper Jedi Edition — iOS Dictation Shortcut Guide</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3a;
+    --text: #e4e4ef;
+    --text-dim: #8888a0;
+    --accent: #7c5cff;
+    --accent-glow: rgba(124, 92, 255, 0.15);
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --cyan: #22d3ee;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 0 0 80px;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 60px 24px 40px;
+    background: linear-gradient(180deg, rgba(124,92,255,0.08) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+  .hero h1 span { color: var(--accent); }
+  .hero .subtitle { color: var(--text-dim); font-size: 1.05rem; }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+
+  h2 {
+    font-size: 1.4rem; font-weight: 700; margin: 48px 0 16px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border); color: #fff;
+  }
+  h2 .num { color: var(--accent); font-weight: 800; margin-right: 6px; }
+
+  h3 { font-size: 1.1rem; font-weight: 600; margin: 28px 0 10px; color: #d0d0e0; }
+
+  p { margin: 0 0 14px; color: var(--text-dim); }
+  p strong { color: var(--text); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px; margin: 20px 0;
+  }
+
+  .card.accent {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, var(--surface), rgba(124,92,255,0.05));
+  }
+
+  .card.green {
+    border-color: var(--green);
+    background: linear-gradient(135deg, var(--surface), rgba(52,211,153,0.05));
+  }
+  .card.green::before {
+    content: '✅ RECOMMENDED'; display: inline-block;
+    font-size: 0.75rem; font-weight: 700; color: var(--green);
+    letter-spacing: 0.08em; margin-bottom: 10px;
+  }
+
+  .card.amber {
+    border-color: var(--amber);
+    background: linear-gradient(135deg, var(--surface), rgba(251,191,36,0.05));
+  }
+  .card.amber::before {
+    content: '⚠️ KNOWN iOS ISSUE'; display: inline-block;
+    font-size: 0.75rem; font-weight: 700; color: var(--amber);
+    letter-spacing: 0.08em; margin-bottom: 10px;
+  }
+
+  .card.fix {
+    border-color: var(--cyan);
+    background: linear-gradient(135deg, var(--surface), rgba(34,211,238,0.05));
+  }
+  .card.fix::before {
+    content: '🔧 FIX'; display: inline-block;
+    font-size: 0.75rem; font-weight: 700; color: var(--cyan);
+    letter-spacing: 0.08em; margin-bottom: 10px;
+  }
+
+  .steps {
+    counter-reset: step; list-style: none; padding: 0; margin: 16px 0;
+  }
+  .steps li {
+    counter-increment: step; position: relative;
+    padding: 12px 16px 12px 52px; margin-bottom: 4px;
+    background: var(--surface2); border-radius: 10px;
+    font-size: 0.95rem; color: var(--text-dim);
+    min-height: 44px; display: flex; align-items: center;
+  }
+  .steps li::before {
+    content: counter(step); position: absolute;
+    left: 14px; top: 50%; transform: translateY(-50%);
+    width: 26px; height: 26px; background: var(--accent);
+    color: #fff; border-radius: 50%; font-size: 0.8rem;
+    font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .steps li strong { color: var(--text); }
+
+  code {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 2px 7px; font-size: 0.88em;
+    font-family: 'SF Mono', 'Menlo', monospace; color: var(--accent);
+    word-break: break-all;
+  }
+
+  .comparison {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;
+  }
+  .comparison > div {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+  }
+  .comparison h4 {
+    font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .comparison ul { list-style: none; padding: 0; }
+  .comparison li { padding: 4px 0; font-size: 0.9rem; color: var(--text-dim); }
+
+  .tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px; letter-spacing: 0.04em;
+    vertical-align: middle; margin-left: 6px;
+  }
+  .tag.fix { background: rgba(34,211,238,0.15); color: var(--cyan); }
+
+  .diagram {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px; margin: 20px 0;
+    text-align: center; font-family: 'SF Mono', monospace;
+    font-size: 0.85rem; color: var(--text-dim);
+    line-height: 2; white-space: pre; overflow-x: auto;
+  }
+  .diagram .hl { color: var(--accent); font-weight: 600; }
+  .diagram .gl { color: var(--green); font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9rem; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-weight: 600; color: var(--text); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { color: var(--text-dim); }
+
+  .faq q {
+    display: block; font-weight: 600; color: var(--text);
+    margin: 24px 0 6px; font-style: normal;
+  }
+  .faq a { color: var(--accent); }
+
+  .callout {
+    border-left: 3px solid var(--cyan);
+    background: rgba(34,211,238,0.04);
+    padding: 16px 20px;
+    border-radius: 0 10px 10px 0;
+    margin: 16px 0;
+  }
+  .callout p { margin: 0; }
+  .callout strong { color: var(--cyan); }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 1.5rem; }
+    .comparison { grid-template-columns: 1fr; }
+    .diagram { font-size: 0.75rem; padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🪄 <span>Jedi Whispers</span> — iOS Shortcut Guide</h1>
+  <p class="subtitle">Dictate from any app → AI transcription → paste back</p>
+</div>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<h2><span class="num">0</span> What You're Trying to Do</h2>
+
+<div class="diagram">
+  You're in <span class="hl">Messages / Notes / any app</span> typing a message
+        ↓ double-tap the back of your phone
+  <span class="hl">Jedi Whispers webapp</span> opens → you speak → AI formats it
+        ↓ auto-copies to clipboard
+  Switch back → <span class="gl">Paste</span> → done
+</div>
+
+<p>
+  You're using the <strong>Jedi Whispers webapp</strong> saved to your iOS home screen.
+  You want to trigger it from any app, dictate, and paste the result back.
+  This guide covers the exact setup and — critically — <strong>how to fix the two
+  annoying permission prompts</strong> that kill the flow.
+</p>
+
+<!-- ============================================================ -->
+<h2><span class="num">1</span> The Two Problems You're Hitting</h2>
+
+<div class="card amber">
+  <h3>Problem 1: "Ready to Record?" prompt every time</h3>
+  <p>
+    Every time the shortcut opens the webapp, you see a modal asking
+    <strong>"Ready to Record — Click below to start recording."</strong>
+    You have to tap <em>Start Recording</em> before anything happens.
+  </p>
+  <p><strong>Why:</strong> iOS Safari requires a <em>user gesture</em> (tap/click)
+    before any website can access the microphone. This is a hard browser security rule —
+    there is no way for a webpage to start recording automatically without a tap.
+    The autostart modal exists <em>because</em> of this requirement.</p>
+  <p><strong>The fix:</strong> Skip the autostart parameter entirely. Just open the page
+    and tap the big microphone button directly. Same number of taps, but it feels more
+    natural and avoids the modal entirely. See <a href="#setup" style="color:var(--cyan)">Section 3</a>.</p>
+</div>
+
+<div class="card amber">
+  <h3>Problem 2: Microphone permission prompt every time</h3>
+  <p>
+    Even though you've granted microphone access before, iOS Safari asks for permission
+    again every time the page loads.
+  </p>
+  <p><strong>Why:</strong> This is a well-known WebKit bug
+    (<a href="https://bugs.webkit.org/show_bug.cgi?id=215884" style="color:var(--cyan)">Bug 215884</a>,
+    <a href="https://bugs.webkit.org/show_bug.cgi?id=228317" style="color:var(--cyan)">Bug 228317</a>).
+    Safari does not reliably persist <code>getUserMedia</code> (microphone) permissions
+    when a page reloads. Each time the shortcut runs "Open URL," it reloads the page
+    in a new context and the permission is lost.</p>
+  <p><strong>The fixes:</strong> See below — there are two things to change.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="num">2</span> Fixing the Permission Issue <span class="tag fix">CRITICAL</span></h2>
+
+<p>You need to do <strong>two things</strong>. Both are required.</p>
+
+<!-- ---- FIX 1 ---- -->
+<div class="card fix">
+  <h3>Fix 1: Grant permanent mic permission in iOS Settings</h3>
+  <p>This tells iOS to remember the permission for this website instead of asking every time.</p>
+</div>
+
+<ol class="steps">
+  <li>Open <strong>Settings</strong> on your iPhone</li>
+  <li>Scroll down and tap <strong>Safari</strong></li>
+  <li>Tap <strong>Microphone</strong> (you may need to scroll to the "Privacy" section)</li>
+  <li>You'll see a list of websites. Find <strong>jediwhisper.railway.app</strong></li>
+  <li>Change it from <strong>"Ask"</strong> to <strong>"Allow"</strong></li>
+</ol>
+
+<div class="callout">
+  <p><strong>Can't find the site in the list?</strong> Open Safari → visit
+    <code>jediwhisper.railway.app</code> → grant mic permission when prompted →
+    then go back to Settings → Safari → Microphone → the site will now appear.
+    Set it to <strong>Allow</strong>.</p>
+</div>
+
+<p style="color:var(--text-dim); font-size:0.88rem;">
+  <em>iOS 18 path:</em> Settings → Apps → Safari → Microphone → [find site] → Allow<br>
+  <em>iOS 17 path:</em> Settings → Safari → Microphone → [find site] → Allow<br>
+  <em>If you don't see a Microphone section:</em> Visit the site in Safari first,
+  grant permission once, then the section will appear.
+</p>
+
+<!-- ---- FIX 2 ---- -->
+<div class="card fix">
+  <h3>Fix 2: Use Safari's "Open URLs" action (not generic "Open URL")</h3>
+  <p>
+    The Safari category "Open URLs" action is smarter — if the URL is already open in a tab,
+    it <strong>reuses that tab</strong> instead of opening a new one. This means the
+    permission from your previous session is preserved.
+  </p>
+</div>
+
+<ol class="steps">
+  <li>Open the <strong>Shortcuts</strong> app</li>
+  <li>Find your existing <strong>"Jedi Dictate"</strong> shortcut (or create a new one with <strong>+</strong>)</li>
+  <li>Delete the existing "Open URL" action</li>
+  <li>Tap <strong>Add Action</strong></li>
+  <li>Search for <strong>"Open URLs"</strong> — make sure you pick the one under the
+    <strong>Safari</strong> category (it has a Safari icon), NOT the generic "Open URL" under Web</li>
+  <li>In the URL field, enter:
+    <code>https://jediwhisper.railway.app</code>
+    <br><em>Note: no <code>?autostart=true</code> — we're skipping the autostart to avoid the modal</em></li>
+  <li>Tap <strong>Done</strong></li>
+</ol>
+
+<div class="callout">
+  <p><strong>Why this matters:</strong> The generic "Open URL" action opens a <em>new tab</em>
+    every time, which loses the permission. The Safari "Open URLs" action reuses the existing
+    tab if it's already open, keeping your permission intact. If no tab is open yet, it opens
+    a new one (and you'll need to grant permission that first time only).</p>
+</div>
+
+<!-- ---- FIRST TIME SETUP ---- -->
+<div class="card green">
+  <h3>First-time permission grant (do this once)</h3>
+  <p>After making the changes above, you need to grant permission once the "right way":</p>
+</div>
+
+<ol class="steps">
+  <li>Open <strong>Safari</strong> (not the home screen icon — actual Safari)</li>
+  <li>Navigate to <code>jediwhisper.railway.app</code></li>
+  <li>Tap the <strong>microphone button</strong> on the page</li>
+  <li>Safari will prompt for microphone access → tap <strong>"Allow"</strong></li>
+  <li>You should see the recording indicator — tap <strong>Stop</strong> to verify it works</li>
+  <li><strong>Don't close this tab.</strong> Leave Safari open with this tab.</li>
+  <li>Now go to <strong>Settings → Safari → Microphone</strong> and confirm the site is set to <strong>"Allow"</strong></li>
+</ol>
+
+<p>After this, every time your shortcut runs, it will reuse the existing Safari tab where
+  permission is already granted. <strong>No more re-prompting.</strong></p>
+
+<!-- ============================================================ -->
+<h2><span class="num">3</span> The Complete Setup <span id="setup"></span></h2>
+
+<h3>Step A: Create the Shortcut</h3>
+
+<ol class="steps">
+  <li>Open the <strong>Shortcuts</strong> app → tap <strong>+</strong></li>
+  <li>Tap <strong>Add Action</strong></li>
+  <li>Search <strong>"Open URLs"</strong> — pick the one with the <strong>Safari icon</strong></li>
+  <li>URL: <code>https://jediwhisper.railway.app</code> (no autostart parameter)</li>
+  <li>Tap <strong>Done</strong> → name it <strong>"Jedi Dictate"</strong></li>
+</ol>
+
+<h3>Step B: Assign a Trigger</h3>
+<p>Pick one to launch from <em>anywhere</em>:</p>
+
+<ol class="steps">
+  <li><strong>Back Tap</strong> — Settings → Accessibility → Touch → Back Tap → Double Tap → "Jedi Dictate"</li>
+  <li><strong>Action Button</strong> (iPhone 15 Pro+) — Settings → Action Button → Shortcut → "Jedi Dictate"</li>
+  <li><strong>Control Center</strong> (iOS 18+) — Add a Shortcuts control → "Jedi Dictate"</li>
+  <li><strong>Home Screen widget</strong> — Add Shortcuts widget → pick "Jedi Dictate"</li>
+  <li><strong>Siri</strong> — Say <em>"Hey Siri, Jedi Dictate"</em></li>
+</ol>
+
+<h3>Step C: Grant Permissions (one-time — see Section 2)</h3>
+<p>Follow the steps in Section 2 above. Open the site in Safari, grant mic permission, leave the tab open, and set it to "Allow" in Settings.</p>
+
+<h3>Step D: The Day-to-Day Workflow</h3>
+
+<ol class="steps">
+  <li>You're typing in <strong>any app</strong> (Messages, WhatsApp, Slack, etc.)</li>
+  <li><strong>Double-tap the back of your phone</strong> (or use your trigger)</li>
+  <li>Safari opens to Jedi Whispers (reuses existing tab — <strong>no permission prompt</strong>)</li>
+  <li>Tap the <strong>big mic button</strong> (one tap — your user gesture)</li>
+  <li><strong>Speak naturally</strong> — AI formats your transcription</li>
+  <li>Tap <strong>Stop</strong> (the red square). Text is <strong>auto-copied to clipboard</strong></li>
+  <li><strong>Swipe up</strong> from the bottom to go home → reopen your original app</li>
+  <li><strong>Long-press → Paste</strong> — your dictation is inserted at the cursor</li>
+</ol>
+
+<div class="card accent">
+  <p><strong>⏱️ Total hands-on time:</strong> ~5 seconds. Tap mic → speak → tap stop → switch back → paste.
+  The speaking part is hands-free.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="num">4</span> Troubleshooting</h2>
+
+<div class="faq">
+  <q>It's STILL asking for microphone permission every time</q>
+  <p>
+    This means the permission isn't persisting. Try these in order:
+  </p>
+  <ol class="steps">
+    <li>Confirm Settings → Safari → Microphone → jediwhisper.railway.app is set to <strong>"Allow"</strong> (not "Ask")</li>
+    <li>Make sure your shortcut uses <strong>Safari "Open URLs"</strong> (with the Safari icon), not generic "Open URL"</li>
+    <li>Open Safari manually, visit the site, grant permission, and <strong>leave the tab open</strong> — don't close it</li>
+    <li>Try removing the home screen bookmark entirely and just use the shortcut to open Safari directly</li>
+    <li>If nothing works, add <code>?autostart=true</code> back to the URL — the autostart prompt (tap to start) is unavoidable but at least it combines the user gesture + permission grant into one tap</li>
+  </ol>
+
+  <q>The Safari "Open URLs" action isn't showing up in Shortcuts</q>
+  <p>
+    Make sure you're searching for <strong>"Open URLs"</strong> (plural) or just
+    <strong>"URLs"</strong>. The action should appear under the <strong>Safari</strong>
+    category with a Safari icon. On older iOS versions it may be called
+    <strong>"Open URL in Safari"</strong>. If you can't find it, the generic "Open URL"
+    still works — you'll just get a new tab each time.
+  </p>
+
+  <q>The autostart modal is annoying — can I skip it?</q>
+  <p>
+    Yes. That's exactly what the setup in Section 3 does — don't use
+    <code>?autostart=true</code> in the URL. Instead, just tap the big microphone
+    button on the page. It's the same number of taps (one) but feels more natural
+    and avoids the modal dialog.
+  </p>
+
+  <q>Why can't the page just auto-record without any tap?</q>
+  <p>
+    iOS Safari blocks microphone access without a <strong>user gesture</strong>
+    (a tap or click). This is a hard security rule enforced by WebKit.
+    No website can bypass this. The tap on the mic button IS that user gesture.
+  </p>
+
+  <q>I closed the Safari tab and now it's asking for permission again</q>
+  <p>
+    This is expected — closing the tab (or Safari purging it from memory) resets
+    the permission context. The fix: <strong>don't manually close the Jedi Whispers tab</strong>.
+    Safari manages tabs automatically and won't close it unless you do. If you have
+    many tabs open and Safari evicts it, just re-grant permission and set it to "Allow"
+    in Settings again.
+  </p>
+
+  <q>What if I'm using the home screen bookmark, not Safari?</q>
+  <p>
+    If you added the site to your home screen via <strong>"Add to Home Screen"</strong>,
+    tapping that icon opens a separate Safari-like window (a WKWebView). Permissions
+    in this context <strong>do not persist reliably</strong> (WebKit bug). For the
+    smoothest experience, <strong>remove the home screen bookmark</strong> and use
+    the shortcut to open the site in regular Safari instead. The shortcut already
+    gives you one-tap access, so the bookmark is redundant.
+  </p>
+
+  <q>Can I make it auto-paste without switching apps?</q>
+  <p>
+    Not with a webapp. iOS does not allow websites or Shortcuts to inject text
+    into other apps. You must manually switch back and paste. This is an Apple
+    security restriction. Only native iOS apps with a keyboard extension
+    (like the Superwhisper App Store app) can auto-paste at the cursor.
+  </p>
+
+  <q>Does this work offline?</q>
+  <p>
+    No. Your Railway-hosted webapp needs internet for AI transcription.
+    If you need offline dictation, use the built-in iOS
+    <strong>Dictate Text</strong> shortcut action (no AI formatting though).
+  </p>
+
+  <q>Why does it open a new tab each time instead of reusing the old one?</q>
+  <p>
+    You're probably using the generic <strong>"Open URL"</strong> action instead of
+    the Safari-specific <strong>"Open URLs"</strong> action. See <a href="#setup" style="color:var(--cyan)">Section 3</a>
+    for the correct shortcut setup. The Safari version reuses existing tabs.
+  </p>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="num">5</span> Pro Tips</h2>
+
+<div class="card">
+  <h3>🚀 Speed up the "switch back"</h3>
+  <p>
+    On iPhones with Face ID, <strong>swipe up from the bottom edge</strong> to go home,
+    then tap your previous app. Or use the <strong>app switcher</strong> (swipe up and hold)
+    to jump directly back. On iOS 18+, you can <strong>swipe left/right on the bottom bar</strong>
+    to quickly switch between your two most recent apps.
+  </p>
+</div>
+
+<div class="card">
+  <h3>⌨️ Quick Paste</h3>
+  <p>
+    After switching back to your app, instead of long-pressing and waiting for the menu,
+    just <strong>tap with three fingers</strong> on the keyboard area to paste (three-finger
+    pinch-out gesture, iOS 13+). Or tap the <strong>cursor</strong> and select "Paste" from
+    the popup — it's faster than long-pressing empty space.
+  </p>
+</div>
+
+<div class="card">
+  <h3>📌 Don't use the Home Screen bookmark</h3>
+  <p>
+    The home screen icon opens a WKWebView that doesn't persist mic permissions.
+    Use the <strong>shortcut + Safari tab</strong> approach instead. The shortcut
+    gives you one-tap access from anywhere, which is what the bookmark was doing anyway.
+  </p>
+</div>
+
+<div class="card">
+  <h3>🎙️ Keep a dedicated Safari tab</h3>
+  <p>
+    Don't close the Jedi Whispers tab in Safari. As long as it stays open,
+    the shortcut will reuse it and permission is preserved. If Safari eventually
+    evicts the tab (you have tons of tabs open), just re-open it and you'll only
+    need to grant permission once more.
+  </p>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="num">6</span> The "Last Resort" Setup <span class="tag fix">IF PERMISSIONS WON'T STICK</span></h2>
+
+<p>
+  If you've done everything above and iOS <em>still</em> re-prompts for mic permission
+  (this happens on some iOS versions), use this fallback approach with
+  <code>?autostart=true</code>. It combines the user gesture and permission grant
+  into one tap:
+</p>
+
+<ol class="steps">
+  <li>Shortcut: Safari <strong>"Open URLs"</strong> → <code>https://jediwhisper.railway.app/?autostart=true</code></li>
+  <li>When it opens, you'll see the <strong>"Ready to Record"</strong> modal</li>
+  <li>Tap <strong>"Start Recording"</strong> — this serves as both your user gesture AND the permission grant</li>
+  <li>If iOS prompts for mic permission, tap <strong>"Allow"</strong> — recording starts immediately</li>
+  <li>Speak → tap Stop → switch back → paste</li>
+</ol>
+
+<div class="callout">
+  <p><strong>Why this works:</strong> The autostart modal is annoying but it's actually
+    doing something useful — the tap on "Start Recording" satisfies iOS's user gesture
+    requirement. If you remove autostart and use the mic button, you're doing the same
+    thing. The difference is that the mic button <em>feels</em> less like an interruption.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="num">7</span> Summary</h2>
+
+<div class="card accent">
+  <p><strong>The recipe:</strong></p>
+  <ol class="steps">
+    <li><strong>Settings → Safari → Microphone → jediwhisper.railway.app → Allow</strong> (one-time)</li>
+    <li>Open the site in Safari once, grant permission, <strong>leave the tab open</strong></li>
+    <li>Create shortcut: Safari <strong>"Open URLs"</strong> → <code>jediwhisper.railway.app</code></li>
+    <li>Assign to <strong>Back Tap</strong> (Settings → Accessibility → Touch → Back Tap)</li>
+    <li>Day-to-day: double-tap back → tap mic → speak → tap stop → switch back → paste</li>
+  </ol>
+  <p style="margin-top:12px;">
+    After initial setup, the flow is: <strong>trigger → tap → speak → stop → paste</strong>.
+    Five quick interactions. No repeated permission prompts.
+  </p>
+</div>
+
+<p style="text-align:center; color:var(--text-dim); margin-top:48px; font-size:0.85rem;">
+  Jedi Whispers — iOS Dictation Guide<br>
+  Updated May 2025
+</p>
+
+</div>
+</body>
+</html>

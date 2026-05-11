@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jedi Whispers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    /* =====================================================
+       JEDI WHISPERS — modern minimalist dark
+       Less is more. Precision over decoration.
+       ===================================================== */
+
+    :root {
+      /* Off-black with a slight cool cast. Never pure #000. */
+      --bg:           #0c0d0e;
+      --bg-deep:      #08090a;   /* deeper recess (under controls) */
+      --surface:      #131416;   /* sits ON bg, barely */
+      --surface-2:    #1a1c1f;
+      --line:         #1f2226;
+      --line-bright:  #2a2e33;
+
+      /* Text */
+      --fg:           #e8e8e6;
+      --fg-dim:       #9b9d9f;
+      --fg-mute:      #5a5d62;
+      --fg-faint:     #383b40;
+
+      /* One accent. A precise electric lime. */
+      --accent:       #c6f74e;
+      --accent-dim:   rgba(198, 247, 78, 0.12);
+      --accent-line:  rgba(198, 247, 78, 0.4);
+
+      /* Signal red for recording — desaturated, not crimson */
+      --signal:       #ff5d4a;
+      --signal-dim:   rgba(255, 93, 74, 0.10);
+
+      /* Type */
+      --sans:    'Geist', system-ui, sans-serif;
+      --mono:    'Geist Mono', ui-monospace, monospace;
+      --serif:   'Instrument Serif', Georgia, serif;
+    }
+
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      font-feature-settings: "ss01", "ss02", "cv11";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      letter-spacing: -0.01em;
+    }
+
+    /* Extremely subtle vignette — adds depth without "glow" */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.025), transparent 60%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ===== STATE SWITCHER (mockup tool) ===== */
+    .state-switcher {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      display: flex;
+      gap: 2px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 3px;
+    }
+    .state-tab {
+      padding: 6px 14px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      color: var(--fg-mute);
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      background: transparent;
+      border-radius: 5px;
+    }
+    .state-tab:hover { color: var(--fg); }
+    .state-tab.active {
+      background: var(--surface-2);
+      color: var(--fg);
+    }
+
+    /* ===== LAYOUT ===== */
+    .page {
+      position: relative;
+      z-index: 2;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 96px 32px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    /* ===== TOP BAR ===== */
+    .top-bar {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-mark {
+      width: 28px; height: 28px;
+      border: 1px solid var(--line-bright);
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      background: var(--surface);
+    }
+    .brand-mark::before {
+      content: '';
+      position: absolute;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+    .brand-name {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: -0.015em;
+    }
+    .brand-name em {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-style: italic;
+      font-size: 16px;
+      color: var(--fg-dim);
+      margin: 0 1px;
+    }
+
+    .session-meta {
+      display: flex;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      color: var(--fg-mute);
+    }
+    .session-meta .dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--fg-faint);
+      display: inline-block;
+      margin: 0 8px;
+      vertical-align: middle;
+    }
+
+    .top-bar-right {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--fg-mute);
+    }
+    .kbd {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 2px 5px;
+      border: 1px solid var(--line-bright);
+      border-radius: 4px;
+      color: var(--fg-dim);
+      background: var(--surface);
+    }
+
+    /* ===== HERO STATUS HEADLINE ===== */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 8px;
+    }
+    .hero-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      color: var(--fg-mute);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hero-label::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 1px;
+      background: var(--fg-faint);
+    }
+    .hero-headline {
+      font-family: var(--sans);
+      font-weight: 500;
+      font-size: 44px;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      color: var(--fg);
+    }
+    .hero-headline em {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--fg-dim);
+      font-size: 48px;
+      letter-spacing: -0.02em;
+    }
+    .hero-headline .accent {
+      color: var(--accent);
+    }
+    .hero-headline .signal {
+      color: var(--signal);
+    }
+
+    /* ===== TRANSCRIPT SURFACE ===== */
+    .surface {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* Top meta strip */
+    .surface-strip {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-mute);
+      letter-spacing: 0.02em;
+    }
+    .strip-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--fg-dim);
+    }
+    .strip-status .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--fg-mute);
+    }
+    .strip-status.live { color: var(--signal); }
+    .strip-status.live .dot {
+      background: var(--signal);
+      animation: livepulse 1s ease-in-out infinite;
+    }
+    .strip-status.done { color: var(--accent); }
+    .strip-status.done .dot { background: var(--accent); }
+    .strip-status.work { color: var(--fg-dim); }
+    .strip-status.work .dot {
+      background: var(--fg-dim);
+      animation: livepulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes livepulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .strip-center {
+      text-align: center;
+      letter-spacing: 0.04em;
+      color: var(--fg-mute);
+    }
+    .strip-timer {
+      font-variant-numeric: tabular-nums;
+      color: var(--fg-dim);
+    }
+    .strip-timer.live { color: var(--signal); }
+
+    /* ===== OSCILLOSCOPE (waveform) ===== */
+    .scope {
+      position: relative;
+      height: 88px;
+      background: var(--bg-deep);
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+    }
+    .scope canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+    }
+    /* Crosshair grid as background — barely visible */
+    .scope::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(0deg, transparent calc(50% - 1px), rgba(255,255,255,0.04) 50%, transparent calc(50% + 1px));
+      pointer-events: none;
+    }
+    .scope-axis {
+      position: absolute;
+      top: 10px; left: 16px;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.05em;
+      color: var(--fg-faint);
+      text-transform: uppercase;
+    }
+    .scope-meter {
+      position: absolute;
+      top: 10px; right: 16px;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.05em;
+      color: var(--fg-faint);
+      text-transform: uppercase;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .meter-bars {
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+      height: 14px;
+    }
+    .meter-bar {
+      width: 2px;
+      background: var(--fg-faint);
+      transition: background 0.2s;
+    }
+    .meter-bar.on { background: var(--accent); }
+    .meter-bar.on.hot { background: var(--signal); }
+
+    /* ===== TRANSCRIPT BODY ===== */
+    .transcript-body {
+      padding: 36px 40px 28px;
+      min-height: 280px;
+    }
+    .transcript-text {
+      font-family: var(--sans);
+      font-size: 19px;
+      line-height: 1.55;
+      letter-spacing: -0.015em;
+      font-weight: 400;
+      color: var(--fg);
+    }
+    .transcript-text.draft {
+      color: var(--fg-dim);
+    }
+    .caret {
+      display: inline-block;
+      width: 2px;
+      height: 0.95em;
+      background: var(--accent);
+      margin-left: 3px;
+      vertical-align: text-bottom;
+      animation: blink 0.9s steps(2) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ===== IDLE STATE ===== */
+    .idle-state {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 280px;
+      padding: 48px 40px;
+      gap: 20px;
+    }
+    .idle-meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      color: var(--fg-mute);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .idle-meta::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--fg-faint);
+      box-shadow: 0 0 0 4px rgba(56, 59, 64, 0.2);
+    }
+    .idle-prompt {
+      font-family: var(--sans);
+      font-weight: 400;
+      font-size: 28px;
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+      color: var(--fg-dim);
+      max-width: 480px;
+    }
+    .idle-prompt em {
+      font-family: var(--serif);
+      font-style: italic;
+      color: var(--fg);
+      font-weight: 400;
+      font-size: 30px;
+    }
+    .idle-hint {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-mute);
+      letter-spacing: 0.02em;
+    }
+
+    /* ===== TRANSCRIBING STATE ===== */
+    .transcribing-state {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 280px;
+      padding: 48px 40px;
+      gap: 22px;
+    }
+    .progress-track {
+      width: 100%;
+      height: 1px;
+      background: var(--line);
+      position: relative;
+      overflow: hidden;
+    }
+    .progress-track::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 30%;
+      height: 100%;
+      background: var(--accent);
+      animation: progressSlide 1.6s ease-in-out infinite;
+    }
+    @keyframes progressSlide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+    .transcribing-label {
+      font-family: var(--sans);
+      font-weight: 400;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+    }
+    .transcribing-label em {
+      font-family: var(--serif);
+      font-style: italic;
+      color: var(--fg-dim);
+    }
+    .transcribing-meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.02em;
+      color: var(--fg-mute);
+      display: flex;
+      gap: 16px;
+    }
+    .transcribing-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .transcribing-meta span::before {
+      content: '';
+      width: 4px; height: 4px;
+      background: var(--fg-faint);
+      border-radius: 50%;
+    }
+
+    /* ===== CONTROL BAR ===== */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 18px 20px;
+      border-top: 1px solid var(--line);
+      background: var(--bg-deep);
+      gap: 16px;
+    }
+
+    .control-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .control-right {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Auto-start toggle */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px 6px 8px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.02em;
+      color: var(--fg-dim);
+      border: 1px solid var(--line-bright);
+      background: var(--surface);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .pill:hover { color: var(--fg); border-color: var(--fg-mute); }
+    .pill.accent {
+      color: var(--accent);
+      border-color: var(--accent-line);
+      background: var(--accent-dim);
+    }
+    .pill.accent:hover { background: rgba(198, 247, 78, 0.18); }
+    .pill .ico {
+      width: 10px; height: 10px;
+      display: inline-block;
+    }
+
+    /* Timer block */
+    .timer-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--fg-dim);
+      background: var(--surface);
+      border: 1px solid var(--line-bright);
+      font-variant-numeric: tabular-nums;
+    }
+    .timer-tag.live {
+      color: var(--signal);
+      border-color: rgba(255, 93, 74, 0.35);
+      background: var(--signal-dim);
+    }
+    .timer-tag .lbl {
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      color: var(--fg-mute);
+    }
+    .timer-tag.live .lbl { color: rgba(255, 93, 74, 0.7); }
+
+    /* THE record button. Tactile, minimal, monochrome. */
+    .record-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .record-btn {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 1px solid var(--line-bright);
+      cursor: pointer;
+      background: var(--surface-2);
+      display: grid;
+      place-items: center;
+      transition: transform 0.1s, border-color 0.2s;
+    }
+    .record-btn:hover { border-color: var(--fg-mute); }
+    .record-btn:active { transform: scale(0.96); }
+
+    .record-disc {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--fg);
+      display: grid;
+      place-items: center;
+      color: var(--bg);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .record-btn.live .record-disc {
+      background: var(--signal);
+      border-radius: 8px;
+      width: 22px;
+      height: 22px;
+      color: transparent;
+    }
+    /* Ring pulse on live state */
+    .record-btn.live::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      border: 1px solid var(--signal);
+      animation: ringPulse 1.6s ease-out infinite;
+    }
+    .record-btn.live::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      border: 1px solid var(--signal);
+      animation: ringPulse 1.6s ease-out infinite;
+      animation-delay: 0.8s;
+    }
+    @keyframes ringPulse {
+      0%   { opacity: 0.7; transform: scale(1); }
+      100% { opacity: 0;   transform: scale(1.25); }
+    }
+    .record-disc svg {
+      width: 18px; height: 18px;
+      stroke: currentColor; fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .record-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--fg-mute);
+      text-transform: uppercase;
+    }
+    .record-btn.live + .record-label { color: var(--signal); }
+
+    /* Icon button */
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--fg-dim);
+      transition: all 0.15s;
+    }
+    .icon-btn:hover {
+      background: var(--surface-2);
+      color: var(--fg);
+      border-color: var(--line-bright);
+    }
+    .icon-btn.danger:hover {
+      color: var(--signal);
+      border-color: rgba(255, 93, 74, 0.3);
+      background: var(--signal-dim);
+    }
+    .icon-btn svg {
+      width: 15px; height: 15px;
+      stroke: currentColor; fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      color: var(--fg-mute);
+    }
+    .footer .center {
+      color: var(--fg-faint);
+    }
+    .footer-divider {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--fg-faint);
+      display: inline-block;
+      margin: 0 8px;
+      vertical-align: middle;
+    }
+
+    /* ===== STATE VISIBILITY ===== */
+    [data-state-view] { display: none; }
+    [data-state-view].show { display: flex; }
+    .hidden { display: none !important; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 640px) {
+      .page { padding: 80px 18px 36px; gap: 32px; }
+      .top-bar { grid-template-columns: 1fr auto; }
+      .top-bar-right { display: none; }
+      .hero-headline { font-size: 32px; }
+      .hero-headline em { font-size: 34px; }
+      .transcript-body, .idle-state, .transcribing-state { padding: 32px 24px; }
+      .transcript-text { font-size: 17px; }
+      .idle-prompt { font-size: 22px; }
+      .idle-prompt em { font-size: 24px; }
+      .controls { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mockup state switcher -->
+  <div class="state-switcher">
+    <button class="state-tab active" data-state="idle">Idle</button>
+    <button class="state-tab" data-state="recording">Recording</button>
+    <button class="state-tab" data-state="transcribing">Transcribing</button>
+    <button class="state-tab" data-state="result">Result</button>
+  </div>
+
+  <main class="page">
+
+    <!-- ================== TOP BAR ================== -->
+    <header class="top-bar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div class="brand-name">Jedi <em>·</em> Whispers</div>
+      </div>
+      <div class="session-meta">
+        <span>SESSION 047</span>
+        <span class="dot"></span>
+        <span id="meta-date">11.05.26</span>
+        <span class="dot"></span>
+        <span>whisper-large-v3</span>
+      </div>
+      <div class="top-bar-right">
+        <span>Record</span>
+        <span class="kbd">⌘</span>
+        <span class="kbd">⇧</span>
+        <span class="kbd">R</span>
+      </div>
+    </header>
+
+    <!-- ================== HERO ================== -->
+    <section class="hero">
+      <div class="hero-label" id="hero-label">Standby</div>
+      <h1 class="hero-headline" id="hero-headline">
+        Speak, and <em>I'll listen</em>.
+      </h1>
+    </section>
+
+    <!-- ================== TRANSCRIPT SURFACE ================== -->
+    <section class="surface">
+
+      <!-- Strip -->
+      <div class="surface-strip">
+        <span class="strip-status" id="strip-status">
+          <span class="dot"></span>
+          <span id="strip-status-label">STANDBY</span>
+        </span>
+        <span class="strip-center">Take 01 · 48kHz · 16-bit · MONO</span>
+        <span class="strip-timer" id="strip-timer">00:00:00</span>
+      </div>
+
+      <!-- Oscilloscope -->
+      <div class="scope hidden" id="scope">
+        <canvas id="wave-canvas"></canvas>
+        <div class="scope-axis">CH 01 · INPUT</div>
+        <div class="scope-meter">
+          <span>LVL</span>
+          <div class="meter-bars" id="meter-bars">
+            <div class="meter-bar" style="height: 3px;"></div>
+            <div class="meter-bar" style="height: 5px;"></div>
+            <div class="meter-bar" style="height: 7px;"></div>
+            <div class="meter-bar" style="height: 9px;"></div>
+            <div class="meter-bar" style="height: 11px;"></div>
+            <div class="meter-bar" style="height: 13px;"></div>
+            <div class="meter-bar" style="height: 14px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- IDLE -->
+      <div data-state-view="idle" class="idle-state show">
+        <div class="idle-meta">No active recording</div>
+        <div class="idle-prompt">
+          Hit the dial below, or use the shortcut. <em>Anything you say will be set down.</em>
+        </div>
+        <div class="idle-hint">Auto-stops after 4s of silence.</div>
+      </div>
+
+      <!-- RECORDING (live preview text) -->
+      <div data-state-view="recording" class="transcript-body">
+        <p class="transcript-text draft">
+          The Force is an energy field created by all living things. It surrounds us, penetrates us, binds the galaxy together<span class="caret"></span>
+        </p>
+      </div>
+
+      <!-- TRANSCRIBING -->
+      <div data-state-view="transcribing" class="transcribing-state">
+        <div class="transcribing-label">Transcribing <em>your voice</em>…</div>
+        <div class="progress-track"></div>
+        <div class="transcribing-meta">
+          <span>whisper · large-v3</span>
+          <span>8.2 sec audio</span>
+          <span>est. 2 sec</span>
+        </div>
+      </div>
+
+      <!-- RESULT -->
+      <div data-state-view="result" class="transcript-body">
+        <p class="transcript-text">
+          The Force is an energy field created by all living things. It surrounds us, penetrates us, and binds the galaxy together. When we learn to quiet our minds, we can hear its guidance, leading us toward balance and harmony.
+        </p>
+      </div>
+
+      <!-- ================== CONTROLS ================== -->
+      <div class="controls">
+
+        <!-- LEFT -->
+        <div class="control-left">
+          <button class="pill accent" data-show-on="idle">
+            <span class="ico">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M9 2L3 9h4l-1 5 6-7H8l1-5z" fill="currentColor"/>
+              </svg>
+            </span>
+            AUTO-START
+          </button>
+
+          <div class="timer-tag live hidden" data-show-on="recording">
+            <span class="lbl">REC</span>
+            <span id="ctrl-rec-timer">00:08</span>
+          </div>
+
+          <div class="timer-tag hidden" data-show-on="transcribing result">
+            <span class="lbl">LEN</span>
+            <span>00:08</span>
+          </div>
+        </div>
+
+        <!-- CENTER: dial -->
+        <div class="record-wrap">
+          <button class="record-btn" id="record-btn" aria-label="Record">
+            <span class="record-disc">
+              <svg viewBox="0 0 24 24">
+                <rect x="9" y="3" width="6" height="11" rx="3"/>
+                <path d="M5 11v1a7 7 0 0 0 14 0v-1"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+              </svg>
+            </span>
+          </button>
+          <span class="record-label" id="record-label">RECORD</span>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="control-right">
+          <div class="hidden" data-show-on="result" style="display:flex;gap:4px;">
+            <button class="icon-btn" title="Copy">
+              <svg viewBox="0 0 24 24">
+                <rect x="9" y="9" width="11" height="11" rx="1"/>
+                <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+              </svg>
+            </button>
+            <button class="icon-btn" title="Save">
+              <svg viewBox="0 0 24 24">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+              </svg>
+            </button>
+            <button class="icon-btn danger" title="Discard">
+              <svg viewBox="0 0 24 24">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== FOOTER ================== -->
+    <footer class="footer">
+      <span>Jedi Whispers</span>
+      <span class="center">— set in Geist &amp; Instrument Serif —</span>
+      <span>v 0.4.7</span>
+    </footer>
+
+  </main>
+
+  <script>
+    /* ---- State management ---- */
+    let state = 'idle';
+    let elapsed = 0;
+    let timerInterval = null;
+    let waveAnim = null;
+
+    const tabs = document.querySelectorAll('.state-tab');
+    tabs.forEach(t => t.addEventListener('click', () => setState(t.dataset.state)));
+
+    document.getElementById('record-btn').addEventListener('click', () => {
+      if (state === 'idle' || state === 'result') setState('recording');
+      else if (state === 'recording') setState('transcribing');
+    });
+
+    function setState(s) {
+      state = s;
+      tabs.forEach(t => t.classList.toggle('active', t.dataset.state === s));
+
+      document.querySelectorAll('[data-state-view]').forEach(el => {
+        el.classList.toggle('show', el.dataset.stateView === s);
+      });
+
+      document.getElementById('scope').classList.toggle('hidden', s !== 'recording');
+
+      document.querySelectorAll('[data-show-on]').forEach(el => {
+        el.classList.toggle('hidden', !el.dataset.showOn.split(' ').includes(s));
+      });
+
+      // Hero
+      const heroLabel = document.getElementById('hero-label');
+      const heroHeadline = document.getElementById('hero-headline');
+      if (s === 'idle') {
+        heroLabel.textContent = 'Standby';
+        heroHeadline.innerHTML = 'Speak, and <em>I\'ll listen</em>.';
+      } else if (s === 'recording') {
+        heroLabel.textContent = 'Now recording';
+        heroHeadline.innerHTML = '<span class="signal">Listening</span> closely.';
+      } else if (s === 'transcribing') {
+        heroLabel.textContent = 'Processing';
+        heroHeadline.innerHTML = 'Turning sound <em>into words</em>.';
+      } else if (s === 'result') {
+        heroLabel.textContent = 'Complete';
+        heroHeadline.innerHTML = '<span class="accent">Transcribed.</span> Yours to keep.';
+      }
+
+      // Strip status
+      const stripStatus = document.getElementById('strip-status');
+      const stripLabel = document.getElementById('strip-status-label');
+      stripStatus.classList.remove('live', 'done', 'work');
+      if (s === 'recording') { stripStatus.classList.add('live'); stripLabel.textContent = 'RECORDING'; }
+      else if (s === 'transcribing') { stripStatus.classList.add('work'); stripLabel.textContent = 'TRANSCRIBING'; }
+      else if (s === 'result') { stripStatus.classList.add('done'); stripLabel.textContent = 'COMPLETE'; }
+      else { stripLabel.textContent = 'STANDBY'; }
+
+      // Strip timer color
+      document.getElementById('strip-timer').classList.toggle('live', s === 'recording');
+
+      // Record button
+      const recordBtn = document.getElementById('record-btn');
+      const recordLabel = document.getElementById('record-label');
+      recordBtn.classList.toggle('live', s === 'recording');
+      recordLabel.textContent = s === 'recording' ? 'STOP' : s === 'transcribing' ? '— PROCESSING' : 'RECORD';
+
+      // Timer
+      clearInterval(timerInterval);
+      cancelAnimationFrame(waveAnim);
+      if (s === 'recording') {
+        elapsed = 8;
+        updateTimer();
+        timerInterval = setInterval(() => { elapsed++; updateTimer(); }, 1000);
+        startWaveform();
+      } else if (s === 'transcribing' || s === 'result') {
+        elapsed = 8;
+        updateTimer();
+      } else {
+        elapsed = 0;
+        updateTimer();
+      }
+    }
+
+    function fmt(s) {
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+    }
+    function fmtShort(s) {
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+    }
+    function updateTimer() {
+      document.getElementById('strip-timer').textContent = fmt(elapsed);
+      document.getElementById('ctrl-rec-timer').textContent = fmtShort(elapsed);
+    }
+
+    /* ---- Oscilloscope trace ---- */
+    function startWaveform() {
+      const canvas = document.getElementById('wave-canvas');
+      const parent = canvas.parentElement;
+      const ctx = canvas.getContext('2d');
+
+      function resize() {
+        const r = parent.getBoundingClientRect();
+        canvas.width = r.width * devicePixelRatio;
+        canvas.height = r.height * devicePixelRatio;
+        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const SPEED = 1.0;
+      const points = [];
+      for (let i = 0; i < 700; i++) points.push(0);
+
+      const meterBars = document.querySelectorAll('#meter-bars .meter-bar');
+
+      function draw() {
+        const w = parent.getBoundingClientRect().width;
+        const h = parent.getBoundingClientRect().height;
+        ctx.clearRect(0, 0, w, h);
+
+        const t = Date.now() / 1000;
+        const sample =
+          0.40 * Math.sin(t * 3.7) +
+          0.28 * Math.sin(t * 9.3 + 1.1) +
+          0.18 * Math.sin(t * 20.5) +
+          (Math.random() - 0.5) * 0.22;
+        points.push(sample);
+        if (points.length > Math.ceil(w / SPEED) + 50) points.shift();
+
+        // Update level meter
+        const recent = points.slice(-25);
+        const avgAmp = recent.reduce((a, b) => a + Math.abs(b), 0) / recent.length;
+        const level = Math.min(7, Math.max(0, Math.round(avgAmp * 9)));
+        meterBars.forEach((bar, i) => {
+          bar.classList.remove('on', 'hot');
+          if (i < level) {
+            bar.classList.add('on');
+            if (i >= 5) bar.classList.add('hot');
+          }
+        });
+
+        // Draw trace — thin lime line, oscilloscope style
+        const midY = h / 2;
+        const amp = h * 0.32;
+
+        // Faint glow trail
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = 'rgba(198, 247, 78, 0.10)';
+        ctx.beginPath();
+        for (let i = 0; i < points.length; i++) {
+          const x = w - (points.length - 1 - i) * SPEED;
+          const y = midY + points[i] * amp;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Sharp main trace
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = '#c6f74e';
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        for (let i = 0; i < points.length; i++) {
+          const x = w - (points.length - 1 - i) * SPEED;
+          const y = midY + points[i] * amp;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Leading dot
+        const lastY = midY + points[points.length - 1] * amp;
+        ctx.fillStyle = '#c6f74e';
+        ctx.shadowColor = 'rgba(198, 247, 78, 0.6)';
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(w - 1, lastY, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        waveAnim = requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+
+</body>
+</html>

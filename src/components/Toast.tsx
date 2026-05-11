@@ -81,28 +81,17 @@ export function ToastProvider({ children }: ToastProviderProps) {
   return (
     <ToastContext.Provider value={{ show, dismiss }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+      <div className="toast-container">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`
-              max-w-sm p-3 rounded-lg shadow-lg border pointer-events-auto
-              transition-all duration-200 ease-out
-              ${t.exiting ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}
-              ${t.type === 'error'
-                ? 'bg-red-50 border-red-200 text-red-800'
-                : 'bg-emerald-50 border-emerald-200 text-emerald-800'
-              }
-            `}
-            style={{
-              transform: t.exiting ? 'translateX(1rem)' : 'translateX(0)',
-            }}
+            className={`toast-card ${t.type} ${t.exiting ? 'exiting' : ''}`}
           >
             <div className="flex items-start gap-3">
-              <p className="flex-1 text-sm font-medium">{t.message}</p>
+              <p className="toast-message">{t.message}</p>
               <button
                 onClick={() => dismiss(t.id)}
-                className="flex-shrink-0 p-0.5 rounded hover:bg-black/5 transition-colors"
+                className="toast-close"
               >
                 <X className="w-4 h-4 opacity-50 hover:opacity-100" />
               </button>
@@ -113,13 +102,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
                   t.action!.onClick();
                   dismiss(t.id);
                 }}
-                className={`
-                  mt-2 text-sm font-medium underline underline-offset-2
-                  ${t.type === 'error'
-                    ? 'text-red-700 hover:text-red-900'
-                    : 'text-emerald-700 hover:text-emerald-900'
-                  }
-                `}
+                className="toast-action"
               >
                 {t.action.label}
               </button>

@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jedi Whispers — Build Plan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #0c0d0e;
+      --bg-deep:      #08090a;
+      --surface:      #131416;
+      --surface-2:    #1a1c1f;
+      --line:         #1f2226;
+      --line-bright:  #2a2e33;
+      --fg:           #e8e8e6;
+      --fg-dim:       #9b9d9f;
+      --fg-mute:      #5a5d62;
+      --fg-faint:     #383b40;
+      --accent:       #c6f74e;
+      --accent-dim:   rgba(198, 247, 78, 0.12);
+      --accent-line:  rgba(198, 247, 78, 0.4);
+      --signal:       #ff5d4a;
+      --signal-dim:   rgba(255, 93, 74, 0.10);
+      --warn:         #ffb347;
+      --warn-dim:     rgba(255, 179, 71, 0.10);
+      --sans:    'Geist', system-ui, sans-serif;
+      --mono:    'Geist Mono', ui-monospace, monospace;
+      --serif:   'Instrument Serif', Georgia, serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      font-feature-settings: "ss01", "ss02", "cv11";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      letter-spacing: -0.01em;
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.025), transparent 60%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .page {
+      position: relative;
+      z-index: 2;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 64px 32px 96px;
+    }
+
+    /* ============ DOCUMENT HEADER ============ */
+    .doc-header {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 48px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-mute);
+      letter-spacing: 0.02em;
+    }
+    .breadcrumb .dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--fg-faint);
+    }
+    .breadcrumb .live {
+      background: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .doc-title {
+      font-family: var(--sans);
+      font-weight: 500;
+      font-size: 52px;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      max-width: 720px;
+    }
+    .doc-title em {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--fg-dim);
+      font-size: 56px;
+    }
+
+    .doc-meta {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-mute);
+    }
+    .doc-meta dt {
+      color: var(--fg-faint);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+    .doc-meta dd { color: var(--fg-dim); }
+
+    /* ============ TABLE OF CONTENTS ============ */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 22px 26px;
+      margin-bottom: 56px;
+    }
+    .toc-title {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--fg-mute);
+      margin-bottom: 14px;
+    }
+    .toc ol {
+      list-style: none;
+      counter-reset: toc;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 24px;
+    }
+    .toc li {
+      counter-increment: toc;
+      font-size: 14px;
+      color: var(--fg-dim);
+      display: flex;
+      gap: 12px;
+    }
+    .toc li::before {
+      content: counter(toc, decimal-leading-zero);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-faint);
+      width: 22px;
+      flex-shrink: 0;
+    }
+    .toc a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .toc a:hover { color: var(--accent); }
+
+    /* ============ SECTIONS ============ */
+    section {
+      margin-bottom: 64px;
+      scroll-margin-top: 32px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 28px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-num {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--fg-mute);
+      letter-spacing: 0.04em;
+    }
+    .section-title {
+      font-family: var(--sans);
+      font-weight: 500;
+      font-size: 28px;
+      letter-spacing: -0.025em;
+    }
+    .section-title em {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--fg-dim);
+      font-size: 30px;
+    }
+
+    /* Section intro text */
+    .lead {
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--fg-dim);
+      max-width: 680px;
+      margin-bottom: 28px;
+    }
+
+    p {
+      color: var(--fg-dim);
+      margin-bottom: 16px;
+      max-width: 720px;
+    }
+    p strong { color: var(--fg); font-weight: 500; }
+
+    a.inline {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px dashed var(--accent-line);
+      transition: opacity 0.15s;
+    }
+    a.inline:hover { opacity: 0.75; }
+
+    /* ============ STACK TABLE ============ */
+    .stack-table {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .stack-row {
+      display: grid;
+      grid-template-columns: 160px 1fr 140px;
+      gap: 24px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      align-items: baseline;
+    }
+    .stack-row:last-child { border-bottom: none; }
+    .stack-row:hover { background: var(--surface-2); }
+
+    .stack-layer {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--fg-mute);
+    }
+    .stack-pick {
+      font-family: var(--sans);
+      font-weight: 500;
+      font-size: 16px;
+      color: var(--fg);
+    }
+    .stack-pick small {
+      display: block;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--fg-mute);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+    .stack-version {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      text-align: right;
+    }
+
+    /* ============ ARCHITECTURE DIAGRAM ============ */
+    .arch {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 32px;
+      margin: 24px 0;
+    }
+    .arch svg { width: 100%; height: auto; }
+
+    /* ============ CARDS ============ */
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 700px) {
+      .card-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 22px;
+    }
+    .card-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    .card-tag.warn {
+      color: var(--warn);
+      background: var(--warn-dim);
+      border: 1px solid rgba(255, 179, 71, 0.25);
+    }
+    .card-tag.risk {
+      color: var(--signal);
+      background: var(--signal-dim);
+      border: 1px solid rgba(255, 93, 74, 0.25);
+    }
+    .card-tag.tip {
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-line);
+    }
+    .card-title {
+      font-family: var(--sans);
+      font-weight: 500;
+      font-size: 16px;
+      color: var(--fg);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .card-body {
+      font-size: 14px;
+      color: var(--fg-dim);
+      line-height: 1.55;
+    }
+    .card-body code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--bg-deep);
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: var(--accent);
+    }
+
+    /* ============ PHASES / TIMELINE ============ */
+    .phases {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 16px;
+    }
+    .phase {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 24px;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+    }
+    .phase:last-child { border-bottom: none; }
+
+    .phase-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-mute);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .phase-num strong {
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .phase-num span {
+      color: var(--fg-faint);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .phase-body h4 {
+      font-family: var(--sans);
+      font-weight: 500;
+      font-size: 17px;
+      color: var(--fg);
+      margin-bottom: 6px;
+      letter-spacing: -0.015em;
+    }
+    .phase-body p {
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .phase-deliverable {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-mute);
+      letter-spacing: 0.02em;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .phase-deliverable::before {
+      content: '→';
+      color: var(--accent);
+    }
+
+    /* ============ COST TABLE ============ */
+    .cost-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .cost-table thead {
+      background: var(--surface-2);
+    }
+    .cost-table th {
+      text-align: left;
+      padding: 14px 18px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--fg-mute);
+      font-weight: 500;
+      border-bottom: 1px solid var(--line);
+    }
+    .cost-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      color: var(--fg-dim);
+    }
+    .cost-table tbody tr:last-child td { border-bottom: none; }
+    .cost-table td.num {
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+      color: var(--fg);
+    }
+    .cost-table tfoot td {
+      background: var(--bg-deep);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-weight: 500;
+      border-top: 1px solid var(--line);
+    }
+
+    /* ============ CHECKLIST ============ */
+    .checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .checklist li {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--fg-dim);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist li::before {
+      content: '';
+      width: 14px;
+      height: 14px;
+      border: 1px solid var(--line-bright);
+      border-radius: 3px;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+    .checklist li strong {
+      color: var(--fg);
+      font-weight: 500;
+    }
+    .checklist li code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--bg-deep);
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: var(--accent);
+    }
+
+    /* ============ CALLOUT ============ */
+    .callout {
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-line);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin: 24px 0;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .callout-icon {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      padding: 2px 8px;
+      border: 1px solid var(--accent-line);
+      border-radius: 4px;
+      background: rgba(198, 247, 78, 0.05);
+    }
+    .callout-body {
+      font-size: 14px;
+      color: var(--fg);
+      line-height: 1.55;
+    }
+    .callout-body strong { color: var(--accent); }
+
+    .callout.warn {
+      background: var(--warn-dim);
+      border-color: rgba(255, 179, 71, 0.3);
+    }
+    .callout.warn .callout-icon {
+      color: var(--warn);
+      border-color: rgba(255, 179, 71, 0.3);
+    }
+    .callout.warn .callout-body strong { color: var(--warn); }
+
+    /* ============ FOOTER ============ */
+    .doc-footer {
+      margin-top: 96px;
+      padding-top: 32px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      color: var(--fg-mute);
+    }
+    .doc-footer em {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 12px;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--fg-faint);
+    }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 700px) {
+      .page { padding: 48px 18px 64px; }
+      .doc-title { font-size: 36px; }
+      .doc-title em { font-size: 38px; }
+      .section-title { font-size: 22px; }
+      .section-title em { font-size: 24px; }
+      .toc ol { grid-template-columns: 1fr; }
+      .stack-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .stack-version { text-align: left; }
+      .phase { grid-template-columns: 70px 1fr; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="page">
+
+    <!-- ================== DOC HEADER ================== -->
+    <header class="doc-header">
+      <div class="breadcrumb">
+        <span class="dot live"></span>
+        <span>JEDI WHISPERS</span>
+        <span class="dot"></span>
+        <span>BUILD PLAN</span>
+        <span class="dot"></span>
+        <span>v 0.1 — DRAFT</span>
+      </div>
+
+      <h1 class="doc-title">
+        Tech stack &amp; <em>everything you'll wish you'd thought about</em> before writing the first line.
+      </h1>
+
+      <dl class="doc-meta">
+        <div>
+          <dt>Platform</dt>
+          <dd>Web — browser only</dd>
+        </div>
+        <div>
+          <dt>Transcription</dt>
+          <dd>Cloud (Groq)</dd>
+        </div>
+        <div>
+          <dt>Priority</dt>
+          <dd>Latency &gt; bundle &gt; speed &gt; team</dd>
+        </div>
+        <div>
+          <dt>Estimated build</dt>
+          <dd>2–3 weeks solo</dd>
+        </div>
+      </dl>
+    </header>
+
+    <!-- ================== TOC ================== -->
+    <nav class="toc">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#stack">The stack</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#audio">Audio capture &amp; the 25MB problem</a></li>
+        <li><a href="#api">The API key &amp; abuse problem</a></li>
+        <li><a href="#errors">Error states &amp; UX edges</a></li>
+        <li><a href="#perf">Performance budget</a></li>
+        <li><a href="#browser">Browser &amp; mobile gotchas</a></li>
+        <li><a href="#phases">Build phases</a></li>
+        <li><a href="#cost">Cost model</a></li>
+        <li><a href="#shipping">Pre-launch checklist</a></li>
+      </ol>
+    </nav>
+
+    <!-- ================== 1. THE STACK ================== -->
+    <section id="stack">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">The stack <em>at a glance</em></h2>
+      </div>
+
+      <p class="lead">
+        Each pick optimizes for your top two priorities: latency first, bundle weight second. No piece is here for resume points.
+      </p>
+
+      <div class="stack-table">
+        <div class="stack-row">
+          <div class="stack-layer">Framework</div>
+          <div class="stack-pick">
+            SvelteKit + Svelte 5
+            <small>Fine-grained reactivity, ~10KB runtime, TypeScript built in.</small>
+          </div>
+          <div class="stack-version">^2.x / ^5.x</div>
+        </div>
+
+        <div class="stack-row">
+          <div class="stack-layer">Build tool</div>
+          <div class="stack-pick">
+            Vite
+            <small>Ships with SvelteKit. Sub-second HMR.</small>
+          </div>
+          <div class="stack-version">^5.x</div>
+        </div>
+
+        <div class="stack-row">
+          <div class="stack-layer">Language</div>
+          <div class="stack-pick">
+            TypeScript (strict)
+            <small>Audio APIs have nuanced types — strict mode pays off.</small>
+          </div>
+          <div class="stack-version">^5.x</div>
+        </div>
+
+        <div class="stack-row">
+          <div class="stack-layer">Styling</div>
+          <div class="stack-pick">
+            Component-scoped CSS
+            <small>Vanilla CSS in &lt;style&gt; blocks. Skip Tailwind — your design is too specific to benefit, and you save ~10KB.</small>
+          </div>
+          <div class="stack-version">native</div>
+        </div>
+
+        <div class="stack-row">
+          <div class="stack-layer">Audio capture</div>
+          <div class="stack-pick">
+            MediaRecorder + AudioContext
+            <small>Native browser APIs. Records WebM/Opus. AnalyserNode powers the waveform.</small>
+          </div>
+          <div class="stack-version">native</div>
+        </div>
+
+        <div class="stack-row">
+          <div class="stack-layer">Transcription</div>
+          <div class="stack-pick">
+            Groq · whisper-large-v3-turbo
+            <small>~228× real-time. $0.04/hr. Sub-second for typical clips.</small>
+          </div>
+          <div class="stack-version">REST API</div>
+        </div>
+
+        <div class="stack-row">
+          <div class="stack-layer">Hosting</div>
+          <div class="stack-pick">
+            Cloudflare Pages + Workers
+            <small>Edge runtime in 300+ POPs, ~5ms cold starts, generous free tier.</small>
+          </div>
+          <div class="stack-version">latest</div>
+        </div>
+
+        <div class="stack-row">
+          <div class="stack-layer">Adapter</div>
+          <div class="stack-pick">
+            @sveltejs/adapter-cloudflare
+            <small>SvelteKit's first-class CF adapter.</small>
+          </div>
+          <div class="stack-version">^4.x</div>
+        </div>
+
+        <div class="stack-row">
+          <div class="stack-layer">Rate limiting</div>
+          <div class="stack-pick">
+            Cloudflare Rate Limiting / KV
+            <small>Per-IP request caps. Critical — see §04.</small>
+          </div>
+          <div class="stack-version">platform</div>
+        </div>
+
+        <div class="stack-row">
+          <div class="stack-layer">Analytics</div>
+          <div class="stack-pick">
+            Cloudflare Web Analytics
+            <small>Zero JS overhead, no cookie banner needed.</small>
+          </div>
+          <div class="stack-version">platform</div>
+        </div>
+
+        <div class="stack-row">
+          <div class="stack-layer">Error tracking</div>
+          <div class="stack-pick">
+            Sentry (optional)
+            <small>Or just Workers Logs. Defer until you have real users.</small>
+          </div>
+          <div class="stack-version">^8.x</div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="callout-icon">NOTE</span>
+        <div class="callout-body">
+          <strong>Things deliberately not in the stack:</strong> Redux/Zustand (Svelte runes handle it), shadcn/component libraries (design is custom), Tailwind (vanilla CSS is lighter), tRPC (one endpoint doesn't need it), Auth provider (no auth in v1), database (no persistence in v1).
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== 2. ARCHITECTURE ================== -->
+    <section id="architecture">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">How the pieces <em>talk</em></h2>
+      </div>
+
+      <p class="lead">
+        Browser captures audio → SvelteKit edge route adds your secret key → Groq transcribes → response streams back. Five hops, all measured in milliseconds.
+      </p>
+
+      <div class="arch">
+        <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#5a5d62"/>
+            </marker>
+            <marker id="arrowAccent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#c6f74e"/>
+            </marker>
+          </defs>
+
+          <!-- BROWSER -->
+          <g>
+            <rect x="20" y="40" width="180" height="280" rx="8" fill="#131416" stroke="#2a2e33"/>
+            <text x="110" y="68" text-anchor="middle" fill="#5a5d62" font-family="Geist Mono" font-size="9" letter-spacing="1">BROWSER</text>
+
+            <rect x="40" y="88" width="140" height="48" rx="5" fill="#1a1c1f" stroke="#1f2226"/>
+            <text x="110" y="108" text-anchor="middle" fill="#e8e8e6" font-family="Geist" font-size="12" font-weight="500">Svelte UI</text>
+            <text x="110" y="124" text-anchor="middle" fill="#9b9d9f" font-family="Geist" font-size="10">State + Canvas</text>
+
+            <rect x="40" y="148" width="140" height="48" rx="5" fill="#1a1c1f" stroke="#1f2226"/>
+            <text x="110" y="168" text-anchor="middle" fill="#e8e8e6" font-family="Geist" font-size="12" font-weight="500">MediaRecorder</text>
+            <text x="110" y="184" text-anchor="middle" fill="#9b9d9f" font-family="Geist" font-size="10">WebM / Opus</text>
+
+            <rect x="40" y="208" width="140" height="48" rx="5" fill="#1a1c1f" stroke="#1f2226"/>
+            <text x="110" y="228" text-anchor="middle" fill="#e8e8e6" font-family="Geist" font-size="12" font-weight="500">AudioContext</text>
+            <text x="110" y="244" text-anchor="middle" fill="#9b9d9f" font-family="Geist" font-size="10">Analyser → waveform</text>
+
+            <rect x="40" y="268" width="140" height="36" rx="5" fill="#0c0d0e" stroke="#1f2226"/>
+            <text x="110" y="290" text-anchor="middle" fill="#5a5d62" font-family="Geist Mono" font-size="10">~30KB JS</text>
+          </g>
+
+          <!-- ARROW 1 -->
+          <line x1="200" y1="180" x2="280" y2="180" stroke="#c6f74e" stroke-width="1.5" marker-end="url(#arrowAccent)"/>
+          <text x="240" y="172" text-anchor="middle" fill="#c6f74e" font-family="Geist Mono" font-size="9">POST</text>
+          <text x="240" y="196" text-anchor="middle" fill="#9b9d9f" font-family="Geist Mono" font-size="9">audio blob</text>
+
+          <!-- EDGE -->
+          <g>
+            <rect x="290" y="40" width="180" height="280" rx="8" fill="#131416" stroke="#2a2e33"/>
+            <text x="380" y="68" text-anchor="middle" fill="#5a5d62" font-family="Geist Mono" font-size="9" letter-spacing="1">CF WORKER (EDGE)</text>
+
+            <rect x="310" y="88" width="140" height="48" rx="5" fill="#1a1c1f" stroke="#1f2226"/>
+            <text x="380" y="108" text-anchor="middle" fill="#e8e8e6" font-family="Geist" font-size="12" font-weight="500">/api/transcribe</text>
+            <text x="380" y="124" text-anchor="middle" fill="#9b9d9f" font-family="Geist" font-size="10">+server.ts</text>
+
+            <rect x="310" y="148" width="140" height="48" rx="5" fill="#1a1c1f" stroke="#1f2226"/>
+            <text x="380" y="168" text-anchor="middle" fill="#e8e8e6" font-family="Geist" font-size="12" font-weight="500">Rate limit</text>
+            <text x="380" y="184" text-anchor="middle" fill="#9b9d9f" font-family="Geist" font-size="10">per-IP, KV-backed</text>
+
+            <rect x="310" y="208" width="140" height="48" rx="5" fill="#1a1c1f" stroke="#1f2226"/>
+            <text x="380" y="228" text-anchor="middle" fill="#e8e8e6" font-family="Geist" font-size="12" font-weight="500">Inject key</text>
+            <text x="380" y="244" text-anchor="middle" fill="#9b9d9f" font-family="Geist" font-size="10">env.GROQ_API_KEY</text>
+
+            <rect x="310" y="268" width="140" height="36" rx="5" fill="#0c0d0e" stroke="#1f2226"/>
+            <text x="380" y="290" text-anchor="middle" fill="#5a5d62" font-family="Geist Mono" font-size="10">~5ms cold start</text>
+          </g>
+
+          <!-- ARROW 2 -->
+          <line x1="470" y1="180" x2="550" y2="180" stroke="#c6f74e" stroke-width="1.5" marker-end="url(#arrowAccent)"/>
+          <text x="510" y="172" text-anchor="middle" fill="#c6f74e" font-family="Geist Mono" font-size="9">POST</text>
+          <text x="510" y="196" text-anchor="middle" fill="#9b9d9f" font-family="Geist Mono" font-size="9">multipart/form</text>
+
+          <!-- GROQ -->
+          <g>
+            <rect x="560" y="40" width="180" height="280" rx="8" fill="#131416" stroke="#2a2e33"/>
+            <text x="650" y="68" text-anchor="middle" fill="#5a5d62" font-family="Geist Mono" font-size="9" letter-spacing="1">GROQ CLOUD</text>
+
+            <rect x="580" y="88" width="140" height="48" rx="5" fill="#1a1c1f" stroke="#1f2226"/>
+            <text x="650" y="108" text-anchor="middle" fill="#e8e8e6" font-family="Geist" font-size="12" font-weight="500">Whisper Turbo</text>
+            <text x="650" y="124" text-anchor="middle" fill="#9b9d9f" font-family="Geist" font-size="10">on LPU hardware</text>
+
+            <rect x="580" y="148" width="140" height="48" rx="5" fill="#1a1c1f" stroke="#1f2226"/>
+            <text x="650" y="168" text-anchor="middle" fill="#e8e8e6" font-family="Geist" font-size="12" font-weight="500">~228× realtime</text>
+            <text x="650" y="184" text-anchor="middle" fill="#9b9d9f" font-family="Geist" font-size="10">8s audio → ~250ms</text>
+
+            <rect x="580" y="208" width="140" height="48" rx="5" fill="#1a1c1f" stroke="#1f2226"/>
+            <text x="650" y="228" text-anchor="middle" fill="#e8e8e6" font-family="Geist" font-size="12" font-weight="500">JSON response</text>
+            <text x="650" y="244" text-anchor="middle" fill="#9b9d9f" font-family="Geist" font-size="10">text + segments</text>
+
+            <rect x="580" y="268" width="140" height="36" rx="5" fill="#0c0d0e" stroke="#1f2226"/>
+            <text x="650" y="290" text-anchor="middle" fill="#5a5d62" font-family="Geist Mono" font-size="10">25MB cap (free)</text>
+          </g>
+        </svg>
+      </div>
+
+      <p>The whole request round-trip for a typical short clip lives in the <strong>800ms–1.2s</strong> range — most of which is network, not compute. The edge worker exists for one critical reason: <strong>your API key never touches the browser</strong>. See §04.</p>
+    </section>
+
+    <!-- ================== 3. AUDIO ================== -->
+    <section id="audio">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Audio capture &amp; <em>the 25MB problem</em></h2>
+      </div>
+
+      <p class="lead">
+        This is the part that bites people. The browser-side audio pipeline has a dozen footguns, and Whisper's 25MB upload limit will eventually meet a user who records a 90-minute meeting.
+      </p>
+
+      <div class="card-grid">
+        <div class="card">
+          <span class="card-tag tip">DO</span>
+          <div class="card-title">Pick the right codec</div>
+          <div class="card-body">
+            Record to <code>audio/webm; codecs=opus</code> at 16kHz mono. Opus is ~10× smaller than WAV for the same intelligibility. Whisper downsamples to 16kHz anyway, so capturing higher is wasted bandwidth.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">WATCH</span>
+          <div class="card-title">Safari hates WebM</div>
+          <div class="card-body">
+            Safari's MediaRecorder won't produce WebM. You'll need <code>audio/mp4</code> as a fallback. Feature-detect with <code>MediaRecorder.isTypeSupported()</code>.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag risk">RISK</span>
+          <div class="card-title">The 25MB ceiling</div>
+          <div class="card-body">
+            At 16kHz mono Opus, that's roughly 60–90 minutes of speech. Past that, Groq rejects the request. Plan for chunking: split on silence gaps, transcribe in parallel, stitch results. Or cap recording length in v1.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">WATCH</span>
+          <div class="card-title">Permission flow is a state</div>
+          <div class="card-body">
+            <code>getUserMedia()</code> can be: pending, granted, denied permanently, or denied-then-changed. Your "idle" state needs to handle "no mic permission" distinctly — with a clear path to fix it.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag tip">DO</span>
+          <div class="card-title">Reuse the AudioContext</div>
+          <div class="card-body">
+            Browsers limit how many AudioContexts you can create. Construct one on first interaction, reuse it. Resume from suspended state if needed (autoplay policy).
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag tip">DO</span>
+          <div class="card-title">Voice activity detection</div>
+          <div class="card-body">
+            Auto-stop after N seconds of silence — your mockup hints at this. Implement with an AnalyserNode reading RMS, debounced over 200ms windows. ~30 lines of code, huge UX win.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== 4. API KEY ================== -->
+    <section id="api">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">The API key <em>&amp; abuse</em> problem</h2>
+      </div>
+
+      <p class="lead">
+        Anyone can open dev tools. If your Groq key ships to the browser, it will be scraped, posted to Discord, and used to transcribe 10,000 hours of someone else's audio on your dime. Within days.
+      </p>
+
+      <div class="callout warn">
+        <span class="callout-icon">CRITICAL</span>
+        <div class="callout-body">
+          <strong>Never call Groq directly from the browser.</strong> Always proxy through your own server route. This is the single most important architectural decision in the build.
+        </div>
+      </div>
+
+      <p>The proxy route is small — maybe 40 lines of TypeScript — but it has to do three jobs:</p>
+
+      <ul class="checklist">
+        <li><strong>Forward the audio</strong> to Groq with your secret key from <code>env.GROQ_API_KEY</code>, never hardcoded.</li>
+        <li><strong>Rate limit by IP</strong> — Cloudflare's native rate limiting handles this. Start conservative: 10 requests/min per IP, raise if you hit complaints.</li>
+        <li><strong>Validate input</strong> — reject non-audio MIME types, cap upload size at the Groq limit, reject empty files. Cheap protection against malformed requests.</li>
+      </ul>
+
+      <p>If you ever open the app to public use without auth, add <strong>Cloudflare Turnstile</strong> (their CAPTCHA replacement) on first request from each IP. It's invisible to real users and stops automated scraping cold.</p>
+    </section>
+
+    <!-- ================== 5. ERROR STATES ================== -->
+    <section id="errors">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Error states <em>&amp; UX edges</em></h2>
+      </div>
+
+      <p class="lead">
+        The mockup covers four happy states. There are at least eight unhappy ones. Designing them up front is the difference between a demo and a product.
+      </p>
+
+      <div class="card-grid">
+        <div class="card">
+          <span class="card-tag warn">EDGE</span>
+          <div class="card-title">Mic permission denied</div>
+          <div class="card-body">
+            Show a distinct screen explaining how to re-enable in browser settings. Don't loop the permission prompt — once denied, you can't ask again programmatically.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">EDGE</span>
+          <div class="card-title">No mic detected</div>
+          <div class="card-body">
+            Different from "denied." User has no input device at all. Disable record, explain why.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">EDGE</span>
+          <div class="card-title">Network failure mid-upload</div>
+          <div class="card-body">
+            User finished recording, upload failed. Don't lose their audio. Keep the blob in memory, show "Retry" button.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">EDGE</span>
+          <div class="card-title">Empty / silent recording</div>
+          <div class="card-body">
+            Whisper sometimes returns " " or hallucinates "Thanks for watching!" on silent audio. Detect short/empty transcripts and prompt to retry.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">EDGE</span>
+          <div class="card-title">Rate limit hit</div>
+          <div class="card-body">
+            Your own rate limit or Groq's. Show countdown to retry, don't just say "error."
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">EDGE</span>
+          <div class="card-title">Recording too long</div>
+          <div class="card-body">
+            Approaching the 25MB cap. Warn at 80%, hard stop at 95%. Show estimated remaining time in the header strip.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">EDGE</span>
+          <div class="card-title">Tab backgrounded mid-record</div>
+          <div class="card-body">
+            Browsers throttle <code>requestAnimationFrame</code> in background tabs — the waveform stops, but recording continues. Indicate clearly when user returns.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">EDGE</span>
+          <div class="card-title">Slow transcription</div>
+          <div class="card-body">
+            If Groq is congested and the request takes &gt;5s, communicate progress. Long silent spinners feel broken. Show estimated time, or "still working."
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== 6. PERFORMANCE ================== -->
+    <section id="perf">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Performance <em>budget</em></h2>
+      </div>
+
+      <p class="lead">
+        Set explicit numbers up front. "Fast" without a target is meaningless. These are aggressive but achievable for an app this small.
+      </p>
+
+      <table class="cost-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Target</th>
+            <th>Stretch</th>
+            <th>How to measure</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Initial JS payload (gzipped)</td>
+            <td class="num">&lt; 50 KB</td>
+            <td class="num">&lt; 30 KB</td>
+            <td>Vite build report</td>
+          </tr>
+          <tr>
+            <td>Time to interactive</td>
+            <td class="num">&lt; 800 ms</td>
+            <td class="num">&lt; 500 ms</td>
+            <td>Lighthouse / WebPageTest</td>
+          </tr>
+          <tr>
+            <td>Tap-to-record latency</td>
+            <td class="num">&lt; 150 ms</td>
+            <td class="num">&lt; 80 ms</td>
+            <td>Performance.now() between events</td>
+          </tr>
+          <tr>
+            <td>Stop → transcript appears</td>
+            <td class="num">&lt; 1500 ms</td>
+            <td class="num">&lt; 900 ms</td>
+            <td>End-to-end timer in client</td>
+          </tr>
+          <tr>
+            <td>Waveform frame rate</td>
+            <td class="num">60 fps</td>
+            <td class="num">60 fps</td>
+            <td>Chrome DevTools perf panel</td>
+          </tr>
+          <tr>
+            <td>Worker cold start</td>
+            <td class="num">&lt; 50 ms</td>
+            <td class="num">&lt; 10 ms</td>
+            <td>CF Workers analytics</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Measure these on real hardware and a throttled "Slow 4G" connection in DevTools, not just on your dev machine. The gap between "feels fast on my M3 Max" and "feels fast on a 3-year-old Android" is where products lose users.</p>
+    </section>
+
+    <!-- ================== 7. BROWSER GOTCHAS ================== -->
+    <section id="browser">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Browser &amp; mobile <em>gotchas</em></h2>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <span class="card-tag warn">SAFARI</span>
+          <div class="card-title">MediaRecorder formats</div>
+          <div class="card-body">
+            Safari 14+ supports MediaRecorder but with limited codec options. Use feature detection — request <code>audio/mp4</code> if WebM isn't supported. Both are fine for Whisper.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">SAFARI</span>
+          <div class="card-title">AudioContext autoplay</div>
+          <div class="card-body">
+            Must be created or resumed inside a user gesture (click/tap). Don't construct it on page load — wait for the record button click.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">MOBILE</span>
+          <div class="card-title">iOS background recording</div>
+          <div class="card-body">
+            iOS suspends MediaRecorder when the tab loses focus. There's no fix on Web — only PWAs with audio focus declared can sometimes work around it. Document this limitation.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">MOBILE</span>
+          <div class="card-title">Keyboard shortcuts</div>
+          <div class="card-body">
+            <code>⌘⇧R</code> reloads the page in most desktop browsers. Pick a different shortcut, like <code>⌘.</code> or a hold-to-record affordance.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">DESKTOP</span>
+          <div class="card-title">HTTPS required</div>
+          <div class="card-body">
+            <code>getUserMedia()</code> only works on HTTPS (or localhost). Cloudflare gives this for free, but local network testing on a phone won't work over plain HTTP.
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card-tag warn">DESKTOP</span>
+          <div class="card-title">Visualizer = battery drain</div>
+          <div class="card-body">
+            Continuous <code>requestAnimationFrame</code> + Canvas keeps the CPU warm. Pause the loop when the tab is hidden — listen to <code>visibilitychange</code>.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== 8. PHASES ================== -->
+    <section id="phases">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">Build <em>in this order</em></h2>
+      </div>
+
+      <p class="lead">
+        Get the audio pipeline working end-to-end before touching the design. Nothing kills a project faster than a beautiful UI hooked to nothing.
+      </p>
+
+      <div class="phases">
+        <div class="phase">
+          <div class="phase-num">
+            <strong>PH 01</strong>
+            <span>Day 1–2</span>
+          </div>
+          <div class="phase-body">
+            <h4>Walking skeleton</h4>
+            <p>Bare SvelteKit page, one button, MediaRecorder → POST → /api/transcribe → Groq → display text. No styling. No states. Just prove the pipeline works locally.</p>
+            <div class="phase-deliverable">Audio in, text out, ugly but functional</div>
+          </div>
+        </div>
+
+        <div class="phase">
+          <div class="phase-num">
+            <strong>PH 02</strong>
+            <span>Day 3–4</span>
+          </div>
+          <div class="phase-body">
+            <h4>State machine</h4>
+            <p>Implement idle / recording / transcribing / result / error states with proper transitions. Use a state machine library (XState lite, or just typed unions). Cover the error states from §05.</p>
+            <div class="phase-deliverable">All 8+ states reachable, no UI polish yet</div>
+          </div>
+        </div>
+
+        <div class="phase">
+          <div class="phase-num">
+            <strong>PH 03</strong>
+            <span>Day 5–7</span>
+          </div>
+          <div class="phase-body">
+            <h4>UI port</h4>
+            <p>Port the mockup HTML/CSS into Svelte components. Component-scoped styles. Wire up the state machine to view switching. This is where the design comes alive.</p>
+            <div class="phase-deliverable">App matches the mockup, all states styled</div>
+          </div>
+        </div>
+
+        <div class="phase">
+          <div class="phase-num">
+            <strong>PH 04</strong>
+            <span>Day 8–9</span>
+          </div>
+          <div class="phase-body">
+            <h4>Waveform &amp; meters</h4>
+            <p>Hook the Canvas oscilloscope to the real AnalyserNode. Implement the level meter and clarity indicator from live audio data. Tune the smoothing constants.</p>
+            <div class="phase-deliverable">Real waveform tracks real voice</div>
+          </div>
+        </div>
+
+        <div class="phase">
+          <div class="phase-num">
+            <strong>PH 05</strong>
+            <span>Day 10</span>
+          </div>
+          <div class="phase-body">
+            <h4>Deploy to edge</h4>
+            <p>Cloudflare Pages connected to Git. Configure secrets. Test the full flow from production URL. Add rate limiting. Measure latency from a phone on cellular.</p>
+            <div class="phase-deliverable">Live URL, key safely stored, rate-limited</div>
+          </div>
+        </div>
+
+        <div class="phase">
+          <div class="phase-num">
+            <strong>PH 06</strong>
+            <span>Day 11–14</span>
+          </div>
+          <div class="phase-body">
+            <h4>Polish &amp; harden</h4>
+            <p>Keyboard shortcuts. Auto-stop on silence. Browser-specific fixes (Safari codec, iOS quirks). Lighthouse pass. Set up Sentry. Write a one-page landing for SEO.</p>
+            <div class="phase-deliverable">Production-grade. Share with friends.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== 9. COST ================== -->
+    <section id="cost">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Cost <em>model</em></h2>
+      </div>
+
+      <p class="lead">
+        At realistic usage, this app costs near-zero. The Groq line is the only variable — and at $0.04/hour transcribed, even heavy users barely register.
+      </p>
+
+      <table class="cost-table">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Free tier</th>
+            <th>100 users · 5 hrs/mo</th>
+            <th>1000 users · 5 hrs/mo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Cloudflare Pages</td>
+            <td>Unlimited bandwidth, 500 builds/mo</td>
+            <td class="num">$0</td>
+            <td class="num">$0</td>
+          </tr>
+          <tr>
+            <td>Cloudflare Workers</td>
+            <td>100K requests/day free</td>
+            <td class="num">$0</td>
+            <td class="num">~$5</td>
+          </tr>
+          <tr>
+            <td>Cloudflare KV (rate limit)</td>
+            <td>100K reads/day free</td>
+            <td class="num">$0</td>
+            <td class="num">$0</td>
+          </tr>
+          <tr>
+            <td>Groq Whisper Turbo</td>
+            <td>None — $0.04/hr</td>
+            <td class="num">$20</td>
+            <td class="num">$200</td>
+          </tr>
+          <tr>
+            <td>Domain</td>
+            <td>—</td>
+            <td class="num">~$1</td>
+            <td class="num">~$1</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>Monthly total</td>
+            <td>—</td>
+            <td class="num">~$21</td>
+            <td class="num">~$206</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="callout">
+        <span class="callout-icon">FYI</span>
+        <div class="callout-body">
+          <strong>Implication:</strong> At 1000 active users, transcription cost is ~$0.20/user/month. A $3/month subscription pays for the API 15× over. The economics work — the constraint is acquiring users, not serving them.
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== 10. SHIPPING ================== -->
+    <section id="shipping">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">Pre-launch <em>checklist</em></h2>
+      </div>
+
+      <ul class="checklist">
+        <li><strong>API key in env, never in code.</strong> Verify with a clean clone — the app should refuse to start without the secret set.</li>
+        <li><strong>Rate limiting active in production.</strong> Test it: hammer your own endpoint, confirm 429s start coming back.</li>
+        <li><strong>HTTPS everywhere.</strong> Cloudflare gives this by default. Verify no mixed-content warnings.</li>
+        <li><strong>Permissions UX tested in 3 browsers.</strong> Chrome, Safari, Firefox. Try denying, then re-allowing.</li>
+        <li><strong>Mobile tested on a real device.</strong> Not just DevTools emulation. iOS Safari is the harshest reviewer.</li>
+        <li><strong>Slow network tested.</strong> Throttle to Slow 4G, verify the upload state and progress feel responsive.</li>
+        <li><strong>Error states all hit at least once.</strong> Deny mic, kill wifi mid-upload, record silence, exceed the size cap.</li>
+        <li><strong>Lighthouse score ≥ 95</strong> on Performance, Accessibility, Best Practices.</li>
+        <li><strong>No console errors</strong> in any state, on any supported browser.</li>
+        <li><strong>Privacy text written.</strong> Audio is sent to Groq for transcription. Not stored. Say so plainly.</li>
+        <li><strong>Source maps disabled in production</strong> (or uploaded to Sentry only). Default Vite behavior is fine.</li>
+        <li><strong>Custom domain configured.</strong> <code>jediwhispers.app</code> reads better than <code>jediwhispers.pages.dev</code>.</li>
+      </ul>
+    </section>
+
+    <!-- ================== FOOTER ================== -->
+    <footer class="doc-footer">
+      <span>JEDI WHISPERS · BUILD PLAN</span>
+      <em>— measure twice, ship once —</em>
+      <span>11.05.26</span>
+    </footer>
+
+  </main>
+
+</body>
+</html>
