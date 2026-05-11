@@ -1,38 +1,28 @@
 import express, { Request, Response } from 'express';
-import multer from 'multer';
 import { transcribeAudio } from '../services/groq.js';
 
 const router = express.Router();
 
-// Configure multer for handling multipart/form-data (fallback)
-const upload = multer({ storage: multer.memoryStorage() });
-
 /**
  * Transcription endpoint
- * Accepts JSON with base64 audio OR multipart/form-data
+ * Accepts JSON with base64 audio
  * Returns JSON with transcribed text
  */
-router.post('/transcribe', upload.single('audio'), async (req: Request, res: Response) => {
+router.post('/transcribe', express.json({ limit: '50mb' }), async (req: Request, res: Response) => {
   try {
-    let audioBuffer: Buffer;
-    let mimeType: string;
+    const { audio, mimeType } = req.body;
 
-    // Check for JSON body with base64 audio (primary path - avoids Zscaler multipart inspection)
-    if (req.body?.audio && typeof req.body.audio === 'string') {
-      mimeType = req.body.mimeType || 'audio/webm';
-      audioBuffer = Buffer.from(req.body.audio, 'base64');
-    } else if (req.file) {
-      // Fallback: multipart/form-data
-      audioBuffer = req.file.buffer;
-      mimeType = req.file.mimetype;
-    } else {
+    if (!audio || typeof audio !== 'string') {
       return res.status(400).json({
         error: 'No audio provided',
-        message: 'Send JSON { audio: base64, mimeType } or multipart with "audio" field'
+        message: 'Send JSON { audio: "base64string", mimeType: "audio/webm" }'
       });
     }
 
-    const text = await transcribeAudio(audioBuffer, mimeType);
+    const audioBuffer = Buffer.from(audio, 'base64');
+    const type = mimeType || 'audio/webm';
+
+    const text = await transcribeAudio(audioBuffer, type);
     res.json({ text });
   } catch (error) {
     console.error('Transcription error:', error);
