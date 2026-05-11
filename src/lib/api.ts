@@ -1,23 +1,37 @@
 /**
  * Frontend API client for transcription
- * Sends audio to the Express backend, which proxies to Groq
+ * Sends audio as base64 JSON to avoid Zscaler multipart inspection
  */
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
 /**
  * Transcribe audio via the backend server
+ * Uses JSON + base64 to avoid corporate proxy issues with multipart uploads
  * @param audioBlob - Audio blob to transcribe
  * @returns Full transcribed text
  */
 export async function streamTranscription(audioBlob: Blob): Promise<string> {
-  const extension = audioBlob.type.split(';')[0].split('/')[1] || 'webm';
-  const formData = new FormData();
-  formData.append('audio', audioBlob, `recording.${extension}`);
+  // Convert Blob to base64 (text payload, not binary multipart)
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      resolve(dataUrl.split(',')[1]);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(audioBlob);
+  });
 
   const response = await fetch(`${API_URL}/api/transcribe`, {
     method: 'POST',
-    body: formData,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      audio: base64,
+      mimeType: audioBlob.type || 'audio/webm',
+    }),
   });
 
   if (!response.ok) {

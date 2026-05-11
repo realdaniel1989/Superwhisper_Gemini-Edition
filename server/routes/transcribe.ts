@@ -4,27 +4,35 @@ import { transcribeAudio } from '../services/groq.js';
 
 const router = express.Router();
 
-// Configure multer for handling multipart/form-data
+// Configure multer for handling multipart/form-data (fallback)
 const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * Transcription endpoint
- * Accepts multipart/form-data with audio file
+ * Accepts JSON with base64 audio OR multipart/form-data
  * Returns JSON with transcribed text
  */
 router.post('/transcribe', upload.single('audio'), async (req: Request, res: Response) => {
   try {
-    const audioFile = req.file;
+    let audioBuffer: Buffer;
+    let mimeType: string;
 
-    if (!audioFile) {
+    // Check for JSON body with base64 audio (primary path - avoids Zscaler multipart inspection)
+    if (req.body?.audio && typeof req.body.audio === 'string') {
+      mimeType = req.body.mimeType || 'audio/webm';
+      audioBuffer = Buffer.from(req.body.audio, 'base64');
+    } else if (req.file) {
+      // Fallback: multipart/form-data
+      audioBuffer = req.file.buffer;
+      mimeType = req.file.mimetype;
+    } else {
       return res.status(400).json({
-        error: 'No audio file provided',
-        message: 'Please provide an audio file in the "audio" field'
+        error: 'No audio provided',
+        message: 'Send JSON { audio: base64, mimeType } or multipart with "audio" field'
       });
     }
 
-    const text = await transcribeAudio(audioFile.buffer, audioFile.mimetype);
-
+    const text = await transcribeAudio(audioBuffer, mimeType);
     res.json({ text });
   } catch (error) {
     console.error('Transcription error:', error);
