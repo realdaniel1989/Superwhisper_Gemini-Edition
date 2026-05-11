@@ -13,7 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(corsMiddleware);
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 // API routes with /api prefix
 app.use('/api', healthRouter);
 app.use('/api', transcribeRouter);
