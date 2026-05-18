@@ -1,12 +1,13 @@
 import express, { Request, Response } from 'express';
 import { transcribeAudio } from '../services/groq.js';
+import { refineText } from '../services/refine.js';
 
 const router = express.Router();
 
 /**
  * Transcription endpoint
  * Accepts JSON with base64 audio
- * Returns JSON with transcribed text
+ * Returns JSON with transcribed text (refined if possible)
  */
 router.post('/transcribe', express.json({ limit: '50mb' }), async (req: Request, res: Response) => {
   try {
@@ -22,8 +23,20 @@ router.post('/transcribe', express.json({ limit: '50mb' }), async (req: Request,
     const audioBuffer = Buffer.from(audio, 'base64');
     const type = mimeType || 'audio/webm';
 
-    const text = await transcribeAudio(audioBuffer, type);
-    res.json({ text });
+    const rawText = await transcribeAudio(audioBuffer, type);
+
+    // Attempt refinement — fall back to raw text on failure
+    let refined = true;
+    let text: string;
+    try {
+      text = await refineText(rawText);
+    } catch (err) {
+      console.error('Refinement error, returning raw text:', err);
+      text = rawText;
+      refined = false;
+    }
+
+    res.json({ text, refined });
   } catch (error) {
     console.error('Transcription error:', error);
     const message = error instanceof Error ? error.message : 'An error occurred while processing the audio';

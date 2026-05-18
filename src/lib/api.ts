@@ -5,13 +5,18 @@
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
+export interface TranscriptionResult {
+  text: string;
+  refined: boolean;
+}
+
 /**
  * Transcribe audio via the backend server
  * Uses JSON + base64 to avoid corporate proxy issues with multipart uploads
  * @param audioBlob - Audio blob to transcribe
- * @returns Full transcribed text
+ * @returns Transcribed text and refinement status
  */
-export async function streamTranscription(audioBlob: Blob): Promise<string> {
+export async function streamTranscription(audioBlob: Blob): Promise<TranscriptionResult> {
   // Convert Blob to base64 (text payload, not binary multipart)
   const base64 = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -43,5 +48,8 @@ export async function streamTranscription(audioBlob: Blob): Promise<string> {
     throw new Error(data.error);
   }
 
-  return data.text;
+  return {
+    text: data.text,
+    refined: data.refined !== false,
+  };
 }
