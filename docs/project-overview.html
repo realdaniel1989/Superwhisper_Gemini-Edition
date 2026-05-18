@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jedi Whispers — Project Overview</title>
+  <style>
+    :root {
+      --bg: #0b0b0f;
+      --surface: #13131a;
+      --surface-2: #1a1a24;
+      --border: #2a2a36;
+      --text: #e8e8ed;
+      --text-muted: #8888a0;
+      --accent: #c6f74e;
+      --accent-dim: rgba(198, 247, 78, 0.12);
+      --signal: #ff5d4a;
+      --signal-dim: rgba(255, 93, 74, 0.12);
+      --info: #5eadff;
+      --info-dim: rgba(94, 173, 255, 0.10);
+      --warn: #ffb84d;
+      --warn-dim: rgba(255, 184, 77, 0.10);
+      --mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Geist Mono', monospace;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Geist', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.65;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Layout */
+    .page { max-width: 960px; margin: 0 auto; padding: 48px 32px 96px; }
+
+    /* Header */
+    .doc-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 32px;
+      margin-bottom: 48px;
+    }
+    .doc-header .tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--accent-dim);
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    .doc-header h1 {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+    .doc-header h1 em { font-style: italic; color: var(--accent); }
+    .doc-header .subtitle { color: var(--text-muted); font-size: 17px; }
+
+    /* Nav */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 48px;
+    }
+    .toc h2 { font-size: 13px; font-family: var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+    .toc ol { columns: 2; column-gap: 32px; padding-left: 20px; }
+    .toc li { margin-bottom: 4px; font-size: 14px; break-inside: avoid; }
+    .toc a { color: var(--accent); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* Sections */
+    .section { margin-bottom: 56px; }
+    .section > h2 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section > h2 .num {
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    .section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 28px 0 10px;
+      color: var(--text);
+    }
+
+    /* Prose */
+    p { margin-bottom: 14px; color: #ccc; }
+    p strong { color: var(--text); font-weight: 600; }
+    ul, ol { margin: 0 0 16px 20px; color: #ccc; }
+    li { margin-bottom: 6px; }
+    li::marker { color: var(--text-muted); }
+
+    /* Code */
+    code {
+      font-family: var(--mono);
+      font-size: 13px;
+      background: var(--surface-2);
+      color: var(--accent);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.55;
+      color: #ccc;
+    }
+    pre code { background: none; padding: 0; color: inherit; }
+
+    /* Callouts */
+    .callout {
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .callout-body { flex: 1; }
+    .callout-body p { margin-bottom: 6px; color: inherit; }
+    .callout-body p:last-child { margin-bottom: 0; }
+    .callout.warn   { background: var(--warn-dim); border: 1px solid rgba(255,184,77,0.2); color: var(--warn); }
+    .callout.critical { background: var(--signal-dim); border: 1px solid rgba(255,93,74,0.2); color: var(--signal); }
+    .callout.info   { background: var(--info-dim); border: 1px solid rgba(94,173,255,0.15); color: var(--info); }
+    .callout.tip    { background: var(--accent-dim); border: 1px solid rgba(198,247,78,0.15); color: var(--accent); }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    td { color: #ccc; }
+    td code { font-size: 12px; }
+
+    /* Flow diagram */
+    .flow {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      color: #aaa;
+    }
+    .flow .hi { color: var(--accent); }
+    .flow .sig { color: var(--signal); }
+    .flow .inf { color: var(--info); }
+    .flow .dim { color: var(--text-muted); }
+
+    /* File tree */
+    .file-tree {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.7;
+      color: #aaa;
+      margin-bottom: 16px;
+    }
+    .file-tree .dir { color: var(--info); font-weight: 600; }
+    .file-tree .comment { color: var(--text-muted); }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .badge.green { background: var(--accent-dim); color: var(--accent); }
+    .badge.red   { background: var(--signal-dim); color: var(--signal); }
+    .badge.blue  { background: var(--info-dim); color: var(--info); }
+    .badge.yellow{ background: var(--warn-dim); color: var(--warn); }
+    .badge.gray  { background: rgba(136,136,160,0.12); color: var(--text-muted); }
+
+    /* Divider */
+    hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .page { padding: 24px 16px 64px; }
+      .toc ol { columns: 1; }
+      pre, .flow, .file-tree { font-size: 12px; padding: 14px 16px; }
+      .doc-header h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ===== HEADER ===== -->
+  <header class="doc-header">
+    <div class="tag">Developer Reference</div>
+    <h1>Jedi Whispers <em>·</em> Project Overview</h1>
+    <p class="subtitle">Everything you need to know before touching the codebase. Version 0.5.0</p>
+  </header>
+
+  <!-- ===== TABLE OF CONTENTS ===== -->
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#purpose">What This Project Is</a></li>
+      <li><a href="#architecture">Architecture &amp; Stack</a></li>
+      <li><a href="#structure">File Structure</a></li>
+      <li><a href="#dataflow">Data Flow — Record to Transcription</a></li>
+      <li><a href="#frontend">Frontend Deep Dive</a></li>
+      <li><a href="#backend">Backend Deep Dive</a></li>
+      <li><a href="#extension">Chrome Extension</a></li>
+      <li><a href="#env">Environment Variables</a></li>
+      <li><a href="#build">Build, Run &amp; Deploy</a></li>
+      <li><a href="#design">Design System</a></li>
+      <li><a href="#gotchas">Gotchas, Quirks &amp; Known Issues</a></li>
+      <li><a href="#todos">Pending Todos &amp; Future Work</a></li>
+      <li><a href="#history">Project History — What Was Removed</a></li>
+    </ol>
+  </nav>
+
+  <!-- ===== 1. PURPOSE ===== -->
+  <section class="section" id="purpose">
+    <h2><span class="num">01</span>What This Project Is</h2>
+
+    <p>
+      <strong>Jedi Whispers</strong> is a dark-themed, single-page browser application for voice dictation.
+      The user presses a record button (or triggers via keyboard shortcut / Chrome extension), speaks into their microphone,
+      and receives an AI-transcribed text result that is automatically copied to the clipboard.
+    </p>
+
+    <p>Core experience in four states:</p>
+
+    <table>
+      <thead><tr><th>State</th><th>What the user sees</th></tr></thead>
+      <tbody>
+        <tr><td><code>idle</code></td><td>"Speak, and <em>I'll listen</em>." — record dial inviting a tap</td></tr>
+        <tr><td><code>recording</code></td><td>Live oscilloscope waveform + Web Speech API preview text</td></tr>
+        <tr><td><code>transcribing</code></td><td>Animated progress bar — "Turning sound <em>into words</em>."</td></tr>
+        <tr><td><code>result</code></td><td>Editable textarea with transcription, copy &amp; discard buttons</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <p><strong>The single most important thing to understand:</strong> the backend exists solely to proxy the Groq API key. The API key is <em>never</em> exposed to the client. Audio goes from browser → Express (as base64 JSON) → Groq Whisper → text back to browser.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. ARCHITECTURE ===== -->
+  <section class="section" id="architecture">
+    <h2><span class="num">02</span>Architecture &amp; Stack</h2>
+
+    <table>
+      <thead><tr><th>Layer</th><th>Technology</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Frontend</strong></td>
+          <td>React 19 + TypeScript + Vite 6.2</td>
+          <td>SPA, no router. Single monolithic component <code>App.tsx</code></td>
+        </tr>
+        <tr>
+          <td><strong>Styling</strong></td>
+          <td>Tailwind CSS 4 + hand-written CSS</td>
+          <td>Dark theme via CSS custom properties. Main stylesheet: <code>src/index.css</code> (~580 lines)</td>
+        </tr>
+        <tr>
+          <td><strong>Backend</strong></td>
+          <td>Express 4.21 + TypeScript</td>
+          <td>Compiled separately via <code>tsconfig.server.json</code>. Serves API + static files</td>
+        </tr>
+        <tr>
+          <td><strong>AI Transcription</strong></td>
+          <td>Groq Whisper <code>whisper-large-v3-turbo</code></td>
+          <td>Called server-side only. API key in <code>.env</code></td>
+        </tr>
+        <tr>
+          <td><strong>Text Refinement</strong></td>
+          <td>Groq <code>openai/gpt-oss-20b</code></td>
+          <td>Post-Whisper cleanup: punctuation, structure, contextual accuracy. Same API key as Whisper.</td>
+        </tr>
+        <tr>
+          <td><strong>Browser Extension</strong></td>
+          <td>Chrome Manifest V3</td>
+          <td>Global keyboard shortcuts to trigger recording from any tab</td>
+        </tr>
+        <tr>
+          <td><strong>Deployment</strong></td>
+          <td>Railway</td>
+          <td>Express serves both API and built frontend from same origin</td>
+        </tr>
+        <tr>
+          <td><strong>State Management</strong></td>
+          <td>React <code>useState</code> + <code>useRef</code></td>
+          <td>No external state library. No auth, no database (removed)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ===== 3. FILE STRUCTURE ===== -->
+  <section class="section" id="structure">
+    <h2><span class="num">03</span>File Structure</h2>
+
+    <p>Only source files shown (node_modules, dist, dist-server excluded):</p>
+
+    <div class="file-tree"><span class="dir">Superwhisper Jedi Edition/</span>
+├── .env                        <span class="comment"># ← GROQ_API_KEY + PORT (gitignored)</span>
+├── .env.example                <span class="comment"># ← Documents required env vars</span>
+├── index.html                  <span class="comment"># ← Vite entry: loads Google Fonts, mounts React</span>
+├── package.json                <span class="comment"># ← name="react-example", all scripts</span>
+├── vite.config.ts              <span class="comment"># ← React+Tailwind plugins, @ alias, HMR toggle</span>
+├── tsconfig.json               <span class="comment"># ← Frontend TS config (ES2022, bundler)</span>
+├── tsconfig.server.json        <span class="comment"># ← Server TS config (NodeNext, outputs dist-server/)</span>
+├── railway.json                <span class="comment"># ← Railway deploy config (npm start)</span>
+├── metadata.json               <span class="comment"># ← Original AI Studio metadata</span>
+│
+├── <span class="dir">src/</span>                          <span class="comment"># ← FRONTEND</span>
+│   ├── main.tsx                <span class="comment"># ← ReactDOM entry, wraps with ToastProvider</span>
+│   ├── App.tsx                 <span class="comment"># ← ⭐ THE component (~330 lines). All app logic</span>
+│   ├── index.css               <span class="comment"># ← Complete dark theme (~580 lines of CSS)</span>
+│   ├── vite-env.d.ts           <span class="comment"># ← Declares import.meta.env.VITE_API_URL</span>
+│   ├── <span class="dir">lib/</span>
+│   │   └── api.ts              <span class="comment"># ← Blob→base64, POST /api/transcribe, returns {text, refined}</span>
+│   └── <span class="dir">components/</span>
+│       └── Toast.tsx           <span class="comment"># ← Toast system (Context + Provider + useToast)</span>
+│
+├── <span class="dir">server/</span>                       <span class="comment"># ← BACKEND</span>
+│   ├── index.ts                <span class="comment"># ← Express entry. CORS, JSON (50MB), /api routes, static + SPA fallback</span>
+│   ├── types.ts                <span class="comment"># ← TranscriptionOptions + TranscriptionChunk interfaces</span>
+│   ├── <span class="dir">middleware/</span>
+│   │   └── cors.ts             <span class="comment"># ← CORS: allows FRONTEND_URL, credentials</span>
+│   ├── <span class="dir">routes/</span>
+│   │   ├── health.ts           <span class="comment"># ← GET /api/health → {status, timestamp}</span>
+│   │   └── transcribe.ts       <span class="comment"># ← POST /api/transcribe → {audio, mimeType} → {text, refined}</span>
+│   └── <span class="dir">services/</span>
+│       ├── groq.ts             <span class="comment"># ← Calls Groq Whisper API with FormData</span>
+│       └── refine.ts           <span class="comment"># ← Post-Whisper text refinement via Groq GPT-OSS-20B</span>
+│
+├── <span class="dir">extension/</span>                     <span class="comment"># ← CHROME EXTENSION</span>
+│   ├── manifest.json           <span class="comment"># ← MV3, permissions, keyboard commands</span>
+│   ├── background.js           <span class="comment"># ← Service worker: finds tab, injects BroadcastChannel command</span>
+│   ├── README.md               <span class="comment"># ← Extension install instructions</span>
+│   └── icon*.png               <span class="comment"># ← 16, 48, 128px icons</span>
+│
+├── <span class="dir">public/</span>
+│   ├── favicon.svg             <span class="comment"># ← Lightsaber-themed dark SVG favicon</span>
+│   └── test-broadcast.html     <span class="comment"># ← BroadcastChannel test page</span>
+│
+├── <span class="dir">docs/</span>
+│   └── superpowers/specs/      <span class="comment"># ← Dark mode waveform design spec</span>
+│
+└── <span class="dir">.planning/</span>                     <span class="comment"># ← Phase plans, todos, project state</span></div>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ️</span>
+      <div class="callout-body">
+        <p><strong>What's NOT here anymore:</strong> Supabase auth (<code>AuthContext.tsx</code>, <code>AuthModal.tsx</code>), database layer (<code>dictations.ts</code>, <code>supabase.ts</code>), and Google Gemini client code were all removed during a UI overhaul. The planning docs still reference these files — they are stale. See <a href="#history">Section 13</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. DATA FLOW ===== -->
+  <section class="section" id="dataflow">
+    <h2><span class="num">04</span>Data Flow — Record to Transcription</h2>
+
+    <div class="flow"><span class="dim">1.</span>  <span class="hi">TRIGGER</span>  User clicks record button / keyboard shortcut / extension / <code>?autostart=true</code>
+       │
+<span class="dim">2.</span>  <span class="hi">CAPTURE</span>  <code>getUserMedia()</code> → MediaRecorder (webm/opus, 48kHz, echo cancel, noise suppress)
+       │           AudioContext + AnalyserNode for waveform (canvas oscilloscope)
+       │           webkitSpeechRecognition for live preview text
+       │
+<span class="dim">3.</span>  <span class="sig">STOP</span>     MediaRecorder.stop() → chunks assembled into Blob
+       │           Stream tracks stopped, AudioContext closed, SpeechRecognition stopped
+       │
+<span class="dim">4.</span>  <span class="inf">SEND</span>    <span class="dim">src/lib/api.ts</span>:  Blob → FileReader → base64 string
+       │           POST to <code>${VITE_API_URL}/api/transcribe</code>
+       │           JSON body: <code>{ audio: "base64...", mimeType: "audio/webm" }</code>
+       │
+<span class="dim">5.</span>  <span class="inf">PROXY</span>    <span class="dim">server/routes/transcribe.ts</span>:  base64 → Buffer
+       │           <span class="dim">server/services/groq.ts</span>:  Buffer → FormData → Groq API
+       │           Model: <code>whisper-large-v3-turbo</code>
+       │           Bearer token from <code>GROQ_API_KEY</code> env var
+       │
+<span class="dim">6.</span>  <span class="inf">REFINE</span>   <span class="dim">server/services/refine.ts</span>:  raw Whisper text → Groq chat completions
+       │           Model: <code>openai/gpt-oss-20b</code> (temperature 0.3)
+       │           Three-layer refinement: mechanical cleanup, structural formatting, contextual accuracy
+       │           On failure: falls back to raw text, response includes <code>refined: false</code>
+       │
+<span class="dim">7.</span>  <span class="hi">RETURN</span>   Express → browser with <code>{ text: "...", refined: true/false }</code>
+       │           <code>window.focus()</code> + <code>navigator.clipboard.writeText()</code> (auto-copy)
+       │           Toast notification: "Transcription complete — copied to clipboard"
+       │           If unrefined: "Refinement unavailable — showing raw transcription."</div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <p><strong>Why base64 JSON instead of multipart?</strong> The code comment in <code>src/lib/api.ts</code> says it explicitly: <em>"Uses JSON + base64 to avoid corporate proxy issues with multipart uploads."</em> Zscaler or similar corporate proxies can inspect and block multipart form uploads. JSON passes through cleanly.</p>
+        <p>This is why the Express server has a <strong>50MB JSON body limit</strong> — base64-encoded audio is ~33% larger than the original binary.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5. FRONTEND ===== -->
+  <section class="section" id="frontend">
+    <h2><span class="num">05</span>Frontend Deep Dive</h2>
+
+    <h3>Component Hierarchy</h3>
+    <pre><code>AppRoot                    ← ToastProvider wrapper
+  └── AppWithToast         ← Registers global toast function
+        └── App             ← ⭐ All logic lives here (~330 lines)</code></pre>
+
+    <h3>State Model (all <code>useState</code>)</h3>
+    <table>
+      <thead><tr><th>State Variable</th><th>Type</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>isRecording</code></td><td><code>boolean</code></td><td>Whether MediaRecorder is active</td></tr>
+        <tr><td><code>recordingTime</code></td><td><code>number</code></td><td>Seconds counter (1s interval)</td></tr>
+        <tr><td><code>audioBlob</code></td><td><code>Blob | null</code></td><td>Final recorded audio blob</td></tr>
+        <tr><td><code>transcription</code></td><td><code>string</code></td><td>AI transcription result (or error message)</td></tr>
+        <tr><td><code>livePreview</code></td><td><code>string</code></td><td>Web Speech API interim text during recording</td></tr>
+        <tr><td><code>isTranscribing</code></td><td><code>boolean</code></td><td>Waiting for Groq response</td></tr>
+        <tr><td><code>copied</code></td><td><code>boolean</code></td><td>Temporary "copied!" feedback (2s timeout)</td></tr>
+        <tr><td><code>isOnline</code></td><td><code>boolean</code></td><td>Online/offline detection via <code>navigator.onLine</code></td></tr>
+        <tr><td><code>autostartEnabled</code></td><td><code>boolean</code></td><td>Whether to show autostart prompt</td></tr>
+        <tr><td><code>showAutostartPrompt</code></td><td><code>boolean</code></td><td>Show the autostart modal</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Derived Display State</h3>
+    <pre><code>const displayState: 'idle' | 'recording' | 'transcribing' | 'result' =
+  isRecording ? 'recording'
+  : isTranscribing && !transcription ? 'transcribing'
+  : transcription ? 'result'
+  : 'idle';</code></pre>
+    <p>This single variable drives the entire UI. Every section of the JSX conditionally renders based on <code>displayState</code>.</p>
+
+    <h3>Key Refs (mutable, not state)</h3>
+    <table>
+      <thead><tr><th>Ref</th><th>What it holds</th></tr></thead>
+      <tbody>
+        <tr><td><code>mediaRecorderRef</code></td><td>Active MediaRecorder instance</td></tr>
+        <tr><td><code>audioChunksRef</code></td><td>Blob[] accumulated during recording</td></tr>
+        <tr><td><code>timerRef</code></td><td>setInterval ID for recording timer</td></tr>
+        <tr><td><code>recognitionRef</code></td><td>webkitSpeechRecognition instance (typed <code>any</code>)</td></tr>
+        <tr><td><code>audioContextRef</code></td><td>AudioContext for waveform analysis</td></tr>
+        <tr><td><code>analyserRef</code></td><td>AnalyserNode (fftSize 256)</td></tr>
+        <tr><td><code>canvasRef</code></td><td>Canvas element for oscilloscope rendering</td></tr>
+        <tr><td><code>meterRef</code></td><td>7-bar level meter div</td></tr>
+        <tr><td><code>animationFrameRef</code></td><td>requestAnimationFrame ID</td></tr>
+        <tr><td><code>wavePointsRef</code></td><td>Scrolling array of waveform sample points</td></tr>
+        <tr><td><code>broadcastChannelRef</code></td><td>BroadcastChannel for extension communication</td></tr>
+      </tbody>
+    </table>
+
+    <h3>BroadcastChannel Communication</h3>
+    <p>The app listens on channel <code>'superwhisper-recording'</code> and responds to four actions:</p>
+    <table>
+      <thead><tr><th>Action</th><th>Behavior</th></tr></thead>
+      <tbody>
+        <tr><td><code>start</code></td><td>Starts recording if not already recording</td></tr>
+        <tr><td><code>stop</code></td><td>Stops recording if currently recording</td></tr>
+        <tr><td><code>toggle</code></td><td>Toggles recording state</td></tr>
+        <tr><td><code>status</code></td><td>Responds with current recording state</td></tr>
+      </tbody>
+    </table>
+    <p>Also exposes <code>window.superwhisper</code> global object with <code>start()</code>, <code>stop()</code>, <code>toggle()</code>, <code>status()</code> methods.</p>
+
+    <h3>Toast System</h3>
+    <p><code>src/components/Toast.tsx</code> provides a context-based toast system:</p>
+    <ul>
+      <li><code>ToastProvider</code> wraps the app at the top level</li>
+      <li><code>useRegisterGlobalToast()</code> hook (called in <code>AppWithToast</code>) registers the global <code>toast()</code> function</li>
+      <li><code>toast(message, { type: 'success' | 'error' })</code> — global function, callable from anywhere</li>
+      <li>Auto-dismiss after 3 seconds</li>
+    </ul>
+
+    <h3>Audio MIME Type Fallback</h3>
+    <p>The recorder tries these MIME types in order, picking the first supported one:</p>
+    <pre><code>1. 'audio/webm;codecs=opus'   ← preferred
+2. 'audio/webm'
+3. 'audio/mp4'
+4. 'audio/ogg;codecs=opus'
+5. ''                          ← let browser decide</code></pre>
+  </section>
+
+  <!-- ===== 6. BACKEND ===== -->
+  <section class="section" id="backend">
+    <h2><span class="num">06</span>Backend Deep Dive</h2>
+
+    <h3>Route Map</h3>
+    <table>
+      <thead><tr><th>Method</th><th>Path</th><th>Handler</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET</code></td><td><code>/api/health</code></td><td><code>routes/health.ts</code></td><td>Returns <code>{status:"ok", timestamp}</code></td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/transcribe</code></td><td><code>routes/transcribe.ts</code></td><td>Base64 audio → Groq Whisper → refine → <code>{ text, refined }</code></td></tr>
+        <tr><td><code>GET</code></td><td><code>*</code></td><td><code>index.ts</code> (SPA fallback)</td><td>Serves <code>index.html</code> for all non-API routes</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Transcription Pipeline (server-side)</h3>
+    <pre><code>POST /api/transcribe
+  ↓
+  req.body = { audio: "base64string", mimeType: "audio/webm" }
+  ↓
+  Buffer.from(audio, 'base64')          // Decode base64 → raw buffer
+  ↓
+  transcribeAudio(buffer, mimeType)      // server/services/groq.ts
+  ↓
+  FormData:
+    file = new Blob([buffer], {type: mimeType})  named "recording.webm"
+    model = "whisper-large-v3-turbo"
+    response_format = "json"
+  ↓
+  fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+    headers: { Authorization: "Bearer ${GROQ_API_KEY}" },
+    body: formData
+  })
+  ↓
+  Groq returns { text: "raw transcribed text..." }
+  ↓
+  refineText(rawText)                    // server/services/refine.ts
+  ↓
+  Groq chat completions:
+    model = "openai/gpt-oss-20b"
+    temperature = 0.3
+    System prompt: mechanical cleanup + structural formatting + contextual accuracy
+  ↓
+  Response: { text: "refined text...", refined: true }
+           └── On refinement failure: { text: "raw text...", refined: false }</code></pre>
+
+    <h3>CORS Configuration</h3>
+    <p><code>server/middleware/cors.ts</code> allows:</p>
+    <ul>
+      <li>Origin: <code>FRONTEND_URL</code> env var (defaults to <code>http://localhost:3000</code>)</li>
+      <li>Methods: GET, POST, OPTIONS</li>
+      <li>Headers: Content-Type, Authorization</li>
+      <li>Credentials: enabled</li>
+    </ul>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ️</span>
+      <div class="callout-body">
+        <p><strong>Production doesn't need CORS</strong> because Express serves the frontend from the same origin. The CORS config is for local development where Vite runs on port 3000 and Express on port 3001.</p>
+      </div>
+    </div>
+
+    <h3>Stale Files</h3>
+    <p><code>server/types.ts</code> exports <code>TranscriptionOptions</code> and <code>TranscriptionChunk</code> interfaces that are <strong>not used anywhere</strong> in the current codebase. These are leftovers from an earlier streaming implementation.</p>
+  </section>
+
+  <!-- ===== 7. EXTENSION ===== -->
+  <section class="section" id="extension">
+    <h2><span class="num">07</span>Chrome Extension ("Superwhisper Remote")</h2>
+
+    <h3>How It Works</h3>
+    <div class="flow"><span class="dim">1.</span> User presses global keyboard shortcut from <span class="hi">any</span> tab
+<span class="dim">2.</span> <span class="dim">background.js</span> service worker receives <code>chrome.commands.onCommand</code> event
+<span class="dim">3.</span> Searches for an open tab at <code>localhost:3000</code> or <code>127.0.0.1:3000</code>
+<span class="dim">4.</span> If no tab found → opens <code>http://localhost:3000</code> in new tab
+<span class="dim">5.</span> Uses <code>chrome.scripting.executeScript()</code> to inject code into the Superwhisper tab
+<span class="dim">6.</span> Injected code calls <code>window.superwhisper[action]()</code> (or BroadcastChannel fallback)
+<span class="dim">7.</span> Main app receives the command and starts/stops recording
+<span class="dim">8.</span> Extension focuses the Superwhisper tab so user sees the result</div>
+
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <thead><tr><th>Action</th><th>Mac</th><th>Windows / Linux</th></tr></thead>
+      <tbody>
+        <tr><td>Toggle recording</td><td><code>Cmd+Option+R</code></td><td><code>Ctrl+Shift+R</code></td></tr>
+        <tr><td>Start recording</td><td><code>Cmd+Option+S</code></td><td><code>Ctrl+Shift+S</code></td></tr>
+        <tr><td>Stop recording</td><td><code>Cmd+Option+X</code></td><td><code>Ctrl+Shift+X</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <p><strong>Cmd+Shift+R is reserved by macOS</strong> (AirDrop). That's why the Mac shortcut uses <code>Cmd+Option+R</code> instead. Don't change this.</p>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <p><strong>The extension only works with localhost.</strong> It searches for tabs at <code>localhost:3000</code> and <code>127.0.0.1:3000</code>. It does NOT support the production Railway URL. If you deploy to production, the extension won't work unless updated.</p>
+      </div>
+    </div>
+
+    <h3>Permissions</h3>
+    <table>
+      <thead><tr><th>Permission</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><code>tabs</code></td><td>Finding the Superwhisper tab</td></tr>
+        <tr><td><code>scripting</code></td><td>Injecting BroadcastChannel commands into the tab</td></tr>
+        <tr><td><code>notifications</code></td><td>Showing shortcut confirmation notifications</td></tr>
+        <tr><td><code>host_permissions</code></td><td>localhost:3000 for script injection</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ===== 8. ENVIRONMENT VARIABLES ===== -->
+  <section class="section" id="env">
+    <h2><span class="num">08</span>Environment Variables</h2>
+
+    <table>
+      <thead><tr><th>Variable</th><th>Where</th><th>Default</th><th>Required?</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>GROQ_API_KEY</code></td>
+          <td>Server (.env)</td>
+          <td>—</td>
+          <td><span class="badge red">REQUIRED</span></td>
+          <td>Bearer token for Groq Whisper API</td>
+        </tr>
+        <tr>
+          <td><code>PORT</code></td>
+          <td>Server (.env)</td>
+          <td><code>3001</code></td>
+          <td><span class="badge gray">optional</span></td>
+          <td>Express server port</td>
+        </tr>
+        <tr>
+          <td><code>FRONTEND_URL</code></td>
+          <td>Server</td>
+          <td><code>http://localhost:3000</code></td>
+          <td><span class="badge gray">optional</span></td>
+          <td>CORS allowed origin (dev only)</td>
+        </tr>
+        <tr>
+          <td><code>VITE_API_URL</code></td>
+          <td>Frontend (build-time)</td>
+          <td><code>''</code> (empty)</td>
+          <td><span class="badge gray">optional</span></td>
+          <td>Backend URL. Empty = same-origin. Set to <code>http://localhost:3001</code> for dev</td>
+        </tr>
+        <tr>
+          <td><code>DISABLE_HMR</code></td>
+          <td>Vite config</td>
+          <td>—</td>
+          <td><span class="badge gray">optional</span></td>
+          <td>Set <code>'true'</code> to disable HMR (for AI Studio agent editing)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Local Development Setup</h3>
+    <pre><code># 1. Copy the example env file
+cp .env.example .env
+
+# 2. Add your Groq API key
+# Edit .env and set GROQ_API_KEY=your_key_here
+
+# 3. In a separate terminal or via dev:all, the frontend
+# needs to know the backend URL:
+VITE_API_URL=http://localhost:3001 npm run dev</code></pre>
+
+    <div class="callout critical">
+      <span class="callout-icon">🚨</span>
+      <div class="callout-body">
+        <p><strong>The app will fail silently if <code>GROQ_API_KEY</code> is missing.</strong> The server will start but transcription requests will return a 500 error with message <code>"GROQ_API_KEY environment variable is required"</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 9. BUILD ===== -->
+  <section class="section" id="build">
+    <h2><span class="num">09</span>Build, Run &amp; Deploy</h2>
+
+    <h3>NPM Scripts</h3>
+    <table>
+      <thead><tr><th>Command</th><th>What it does</th><th>When to use</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>npm run dev</code></td>
+          <td><code>vite --port=3000 --host=0.0.0.0</code></td>
+          <td>Frontend dev server with HMR</td>
+        </tr>
+        <tr>
+          <td><code>npm run server:dev</code></td>
+          <td><code>tsx watch server/index.ts</code></td>
+          <td>Backend dev with hot reload</td>
+        </tr>
+        <tr>
+          <td><code>npm run dev:all</code></td>
+          <td>Both of the above simultaneously</td>
+          <td>Full local development</td>
+        </tr>
+        <tr>
+          <td><code>npm run build</code></td>
+          <td><code>vite build</code> then <code>tsc -p tsconfig.server.json</code></td>
+          <td>Production build (frontend + backend)</td>
+        </tr>
+        <tr>
+          <td><code>npm start</code></td>
+          <td><code>node dist-server/index.js</code></td>
+          <td>Run production server</td>
+        </tr>
+        <tr>
+          <td><code>npm run clean</code></td>
+          <td><code>rm -rf dist dist-server</code></td>
+          <td>Nuke build artifacts</td>
+        </tr>
+        <tr>
+          <td><code>npm run lint</code></td>
+          <td><code>tsc --noEmit</code></td>
+          <td>TypeScript type checking</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Build Pipeline</h3>
+    <div class="flow"><span class="dim">Step 1.</span>  <code>vite build</code>
+     Compiles React frontend → <span class="hi">dist/</span> (HTML, JS bundle, CSS, favicon)
+
+<span class="dim">Step 2.</span>  <code>tsc -p tsconfig.server.json</code>
+     Compiles <span class="hi">server/*.ts</span> → <span class="hi">dist-server/*.js</span> (ESM modules, NodeNext)
+
+<span class="dim">Step 3.</span>  <code>node dist-server/index.js</code>
+     Express serves static files from <span class="hi">dist/</span> + handles <span class="hi">/api</span> routes</div>
+
+    <h3>Production Architecture</h3>
+    <p>In production (Railway), a single Express process serves <strong>both</strong> the frontend static files and the API. There is no separate frontend server. <code>VITE_API_URL</code> is empty, so the frontend makes same-origin requests to <code>/api/transcribe</code>.</p>
+
+    <h3>Railway Configuration</h3>
+    <pre><code>// railway.json
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": { "builder": "NIXPACKS" },
+  "deploy": {
+    "startCommand": "npm start",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}</code></pre>
+    <p>Railway environment variables to set: <code>GROQ_API_KEY</code>, <code>PORT</code> (Railway provides PORT automatically).</p>
+
+    <h3>TypeScript Configuration</h3>
+    <table>
+      <thead><tr><th>Config</th><th>Target</th><th>Module</th><th>Output</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>tsconfig.json</code></td><td>ES2022</td><td>bundler</td><td>—</td><td>Frontend (Vite handles bundling)</td></tr>
+        <tr><td><code>tsconfig.server.json</code></td><td>ES2022</td><td>NodeNext</td><td><code>dist-server/</code></td><td>Backend (compiled by tsc directly)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <p><strong>Path alias <code>@</code></strong> is configured in <code>vite.config.ts</code> to resolve to the project root, but it's for frontend use only. The server TypeScript compilation doesn't use the <code>@</code> alias. Don't use <code>@/</code> imports in server code.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 10. DESIGN SYSTEM ===== -->
+  <section class="section" id="design">
+    <h2><span class="num">10</span>Design System</h2>
+
+    <p>The entire dark theme lives in <code>src/index.css</code> (~580 lines). No Tailwind utility classes are used in component markup — all styling is via CSS custom properties and class names defined in this file.</p>
+
+    <h3>Color Tokens</h3>
+    <table>
+      <thead><tr><th>Name</th><th>Value</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Accent (lime)</strong></td><td><code>#c6f74e</code></td><td>Primary action color, waveform trace, buttons, labels</td></tr>
+        <tr><td><strong>Signal (red)</strong></td><td><code>#ff5d4a</code></td><td>Recording indicator, danger actions, top meter bars</td></tr>
+        <tr><td><strong>Background</strong></td><td><code>#0b0b0f</code></td><td>Page background</td></tr>
+        <tr><td><strong>Surface</strong></td><td><code>#13131a</code></td><td>Card backgrounds</td></tr>
+        <tr><td><strong>Border</strong></td><td><code>#2a2a36</code></td><td>Subtle borders</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Typography</h3>
+    <table>
+      <thead><tr><th>Font</th><th>Usage</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Geist</strong></td><td>Body text, UI</td><td>Google Fonts CDN (loaded in <code>index.html</code>)</td></tr>
+        <tr><td><strong>Geist Mono</strong></td><td>Labels, code, timers</td><td>Google Fonts CDN</td></tr>
+        <tr><td><strong>Instrument Serif</strong></td><td>Italic emphasis text in headlines</td><td>Google Fonts CDN</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Oscilloscope Waveform</h3>
+    <p>During recording, a canvas renders a scrolling time-domain waveform with three visual layers:</p>
+    <ol>
+      <li><strong>Glow trail</strong> — 2.5px stroke, <code>rgba(198, 247, 78, 0.10)</code></li>
+      <li><strong>Main trace</strong> — 1.2px stroke, <code>#c6f74e</code></li>
+      <li><strong>Leading dot</strong> — 2px circle at the rightmost point, with <code>shadowBlur: 6</code> glow</li>
+    </ol>
+    <p>The waveform scrolls left at <code>SPEED = 1.0</code> pixels per frame. A 7-bar RMS level meter sits alongside — bars 5+ turn red (the "hot" zone).</p>
+
+    <h3>Favicon</h3>
+    <p><code>public/favicon.svg</code> is a lightsaber-themed icon: dark circle with a cyan blade and hilt. Custom SVG, not from an icon library.</p>
+  </section>
+
+  <!-- ===== 11. GOTCHAS ===== -->
+  <section class="section" id="gotchas">
+    <h2><span class="num">11</span>Gotchas, Quirks &amp; Known Issues</h2>
+
+    <div class="callout critical">
+      <span class="callout-icon">🚨</span>
+      <div class="callout-body">
+        <p><strong>403 Forbidden on production</strong> — The Railway deployment has been returning 403 errors on <code>/api/transcribe</code>. This is likely caused by Zscaler corporate proxy intercepting the request to Groq's API. The <code>Zscaler_Diagnostic_Report.docx</code> in the project root confirms proxy issues. The base64 JSON approach was meant to work around this, but the server-to-Groq call can still be blocked.</p>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <p><strong>webkitSpeechRecognition is Chrome-only.</strong> Firefox doesn't support it. Safari has limited support. The live preview feature only works in Chromium-based browsers. The code doesn't fail gracefully — it just silently skips the live preview.</p>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <p><strong>No recording size limit.</strong> Groq has a 25MB upload limit, but the app doesn't enforce any cap. Very long recordings could exceed this and fail silently.</p>
+      </div>
+    </div>
+
+    <h3>More Quirks</h3>
+    <table>
+      <thead><tr><th>Issue</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Audio lost on error</strong></td>
+          <td>If transcription fails, the audio blob is discarded. User must re-record. No retry mechanism.</td>
+        </tr>
+        <tr>
+          <td><strong><code>any</code> types</strong></td>
+          <td><code>recognitionRef</code> is typed as <code>any</code>. <code>window.superwhisper</code> is set via <code>(window as any)</code>. No type safety for browser-specific APIs.</td>
+        </tr>
+        <tr>
+          <td><strong>No test coverage</strong></td>
+          <td>Zero test files. No test framework configured. No test scripts in package.json.</td>
+        </tr>
+        <tr>
+          <td><strong>Unused dependencies</strong></td>
+          <td><code>multer</code> (was for multipart uploads, replaced by JSON), <code>motion</code> (Framer Motion, imported but not used in components), <code>lucide-react</code> (only used for toast close icon).</td>
+        </tr>
+        <tr>
+          <td><strong>Stale server types</strong></td>
+          <td><code>server/types.ts</code> exports <code>TranscriptionOptions</code> and <code>TranscriptionChunk</code> — used by nothing. Leftover from streaming implementation.</td>
+        </tr>
+        <tr>
+          <td><strong>package.json name</strong></td>
+          <td>The name field is <code>"react-example"</code> and version is <code>"0.0.0"</code>. The real app identity is in the UI footer: "v 0.5.0".</td>
+        </tr>
+        <tr>
+          <td><strong>HMR comment in vite.config.ts</strong></td>
+          <td>There's a comment saying "Do not modify" about HMR disabling. This is for AI Studio agent editing — if you're not using AI Studio, you can ignore it.</td>
+        </tr>
+        <tr>
+          <td><strong>build-plan.html is aspirational</strong></td>
+          <td>The build plan describes a SvelteKit + Cloudflare Workers architecture that was never built. The actual stack is React + Express + Railway. Don't treat it as current documentation.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ===== 12. TODOS ===== -->
+  <section class="section" id="todos">
+    <h2><span class="num">12</span>Pending Todos &amp; Future Work</h2>
+
+    <h3>Open Items (from <code>.planning/todos/pending/</code>)</h3>
+    <table>
+      <thead><tr><th>Todo</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Fix Supabase email redirect URL</td>
+          <td><span class="badge yellow">blocked</span></td>
+          <td>Supabase dashboard config needed, but auth code was removed from codebase. This todo is stale.</td>
+        </tr>
+        <tr>
+          <td>Add search to transcription history</td>
+          <td><span class="badge gray">not started</span></td>
+          <td>No history feature currently exists (Supabase was removed). Would need storage layer first.</td>
+        </tr>
+        <tr>
+          <td>Event listener for external recording trigger</td>
+          <td><span class="badge green">done</span></td>
+          <td>Implemented via BroadcastChannel + Chrome extension + keyboard shortcuts.</td>
+        </tr>
+        <tr>
+          <td>Auto-copy transcription on complete</td>
+          <td><span class="badge green">done</span></td>
+          <td>Implemented in <code>transcribeAudio()</code> function.</td>
+        </tr>
+        <tr>
+          <td>Transcript refinement (punctuation, structure, accuracy)</td>
+          <td><span class="badge green">done</span></td>
+          <td>Groq GPT-OSS-20B post-processes raw Whisper output. Graceful fallback on failure.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Recommended Next Steps</h3>
+    <ul>
+      <li><strong>Fix the production 403 error</strong> — diagnose whether it's Groq rate limiting, Zscaler proxy, or Railway networking</li>
+      <li><strong>Add recording size/duration limit</strong> — cap before hitting Groq's 25MB upload limit</li>
+      <li><strong>Clean up unused deps</strong> — remove <code>multer</code>, <code>motion</code> if not needed</li>
+      <li><strong>Clean up <code>server/types.ts</code></strong> — remove unused interfaces or repurpose them</li>
+      <li><strong>Update <code>.planning/</code> docs</strong> — they reference Supabase auth/database code that no longer exists</li>
+      <li><strong>Add error retry</strong> — preserve audio blob on transcription failure so user can retry</li>
+      <li><strong>Consider bringing back auth/storage</strong> — the planned Phases 2-3 features were completed then removed; the architecture in <code>.planning/phases/</code> documents how to re-add them</li>
+    </ul>
+  </section>
+
+  <!-- ===== 13. HISTORY ===== -->
+  <section class="section" id="history">
+    <h2><span class="num">13</span>Project History — What Was Removed</h2>
+
+    <p>The project went through 4 planned phases. Here's what happened:</p>
+
+    <table>
+      <thead><tr><th>Phase</th><th>What was built</th><th>Current status</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Phase 1: Backend API</strong></td>
+          <td>Express server, Groq proxy (originally OpenRouter), health endpoint</td>
+          <td><span class="badge green">active</span> — core of current backend</td>
+        </tr>
+        <tr>
+          <td><strong>Phase 2: Authentication</strong></td>
+          <td>Supabase Auth: <code>AuthContext.tsx</code>, <code>AuthModal.tsx</code>, <code>supabase.ts</code></td>
+          <td><span class="badge red">removed</span> — files deleted during UI overhaul</td>
+        </tr>
+        <tr>
+          <td><strong>Phase 3: Database Storage</strong></td>
+          <td>Supabase DB: <code>dictations.ts</code>, <code>supabase/migrations/</code></td>
+          <td><span class="badge red">removed</span> — files deleted during UI overhaul</td>
+        </tr>
+        <tr>
+          <td><strong>Phase 4: Deployment</strong></td>
+          <td>Railway config, SPA fallback, static file serving</td>
+          <td><span class="badge green">active</span> — <code>railway.json</code>, Express static serving</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>After Phase 4, a <strong>major UI overhaul</strong> replaced the light-themed Tailwind UI with the current dark theme + oscilloscope waveform (documented in <code>docs/superpowers/specs/2026-05-11-dark-mode-waveform-design.md</code>). During this overhaul, the Supabase auth and database code was removed, leaving the current streamlined single-user dictation tool.</p>
+
+    <h3>API History</h3>
+    <table>
+      <thead><tr><th>AI Service</th><th>When</th><th>Why changed</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Google Gemini</strong> (<code>gemini-3.1-flash-lite-preview</code>)</td>
+          <td>Original prototype</td>
+          <td>API key was exposed in client bundle — security issue</td>
+        </tr>
+        <tr>
+          <td><strong>OpenRouter</strong> (planned)</td>
+          <td>Phase 1 planning</td>
+          <td>Was the planned intermediary for Gemini with fallback. Never deployed.</td>
+        </tr>
+        <tr>
+          <td><strong>Groq Whisper</strong> (<code>whisper-large-v3-turbo</code>)</td>
+          <td>Phase 1 implementation</td>
+          <td>Current transcription solution. Server-side only, key never exposed to client.</td>
+        </tr>
+        <tr>
+          <td><strong>Groq GPT-OSS-20B</strong> (<code>openai/gpt-oss-20b</code>)</td>
+          <td>v0.5.0</td>
+          <td>Text refinement after Whisper. Same API key. Three-layer: mechanical cleanup, structural formatting, contextual accuracy.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ️</span>
+      <div class="callout-body">
+        <p><strong>The <code>.planning/</code> directory is partially stale.</strong> It references Supabase files, OpenRouter configuration, and database schemas that don't exist in the current codebase. Read it for historical context and re-implementation guidance, not as a description of what's currently running.</p>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <p><strong>If you need to re-add Supabase auth/storage</strong>, the most valuable references are:
+        <code>.planning/phases/02-authentication/</code> and <code>.planning/phases/03-database-storage/</code>.
+        These contain the completed plans and summaries from when the features were built. The architecture is sound; the code was just removed during the UI redesign.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <footer style="text-align:center; color: var(--text-muted); font-size:13px; padding-top:16px;">
+    Jedi Whispers &middot; Developer Reference &middot; Generated May 2026 &middot; v0.5.0
+  </footer>
+
+</div>
+</body>
+</html>
