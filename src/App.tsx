@@ -279,7 +279,7 @@ function App() {
     setIsTranscribing(true);
     setTranscription('');
     try {
-      const text = await streamTranscription(blob);
+      const { text, refined } = await streamTranscription(blob);
       setTranscription(text);
 
       if (text.trim()) {
@@ -287,13 +287,28 @@ function App() {
           window.focus();
           if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(text);
-            toast("Transcription complete — copied to clipboard", { type: 'success' });
+            toast(
+              refined
+                ? "Transcription complete — copied to clipboard"
+                : "Refinement unavailable — showing raw transcription. Copied to clipboard.",
+              { type: refined ? 'success' : 'error' }
+            );
           } else {
-            toast("Transcription complete", { type: 'success' });
+            toast(
+              refined
+                ? "Transcription complete"
+                : "Refinement unavailable — showing raw transcription.",
+              { type: refined ? 'success' : 'error' }
+            );
           }
         } catch (err) {
           console.log('Auto-copy not available:', err);
-          toast("Transcription complete", { type: 'success' });
+          toast(
+            refined
+              ? "Transcription complete"
+              : "Refinement unavailable — showing raw transcription.",
+            { type: refined ? 'success' : 'error' }
+          );
         }
       }
     } catch (error) {
