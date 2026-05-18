@@ -5,7 +5,7 @@
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/audio/transcriptions';
 
-function getApiKey(): string {
+export function getApiKey(): string {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     throw new Error('GROQ_API_KEY environment variable is required');
