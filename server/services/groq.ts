@@ -29,6 +29,7 @@ export async function transcribeAudio(
   formData.append('file', new Blob([audioBuffer], { type: mimeType }), `recording.${extension}`);
   formData.append('model', 'whisper-large-v3-turbo');
   formData.append('response_format', 'json');
+  formData.append('language', 'en');
 
   const response = await fetch(GROQ_API_URL, {
     method: 'POST',
