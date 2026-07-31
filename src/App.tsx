@@ -409,6 +409,16 @@ function App() {
     }
   };
 
+  // Auto-stop at 10 minutes — protects against runaway recordings and
+  // keeps upload size / Groq payload limits in check
+  const MAX_RECORDING_SECONDS = 600;
+  useEffect(() => {
+    if (isRecording && recordingTime >= MAX_RECORDING_SECONDS) {
+      stopRecording();
+      toast("Recording stopped — 10 minute limit reached", { type: 'error' });
+    }
+  }, [recordingTime, isRecording]);
+
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();

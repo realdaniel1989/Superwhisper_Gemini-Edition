@@ -23,11 +23,14 @@ router.post('/transcribe', express.json({ limit: '50mb' }), async (req: Request,
     const audioBuffer = Buffer.from(audio, 'base64');
     const type = mimeType || 'audio/webm';
 
+    const t0 = performance.now();
     const rawText = await transcribeAudio(audioBuffer, type);
+    const asrMs = Math.round(performance.now() - t0);
 
     // Attempt refinement — fall back to raw text on failure
     let refined = true;
     let text: string;
+    const t1 = performance.now();
     try {
       text = await refineText(rawText);
     } catch (err) {
@@ -35,6 +38,12 @@ router.post('/transcribe', express.json({ limit: '50mb' }), async (req: Request,
       text = rawText;
       refined = false;
     }
+    const refineMs = Math.round(performance.now() - t1);
+
+    console.log(
+      `[transcribe] audio=${(audioBuffer.length / 1024).toFixed(0)}KB ` +
+      `asr=${asrMs}ms refine=${refineMs}ms refined=${refined} total=${asrMs + refineMs}ms`
+    );
 
     res.json({ text, refined });
   } catch (error) {

@@ -31,6 +31,13 @@ export async function transcribeAudio(
   formData.append('response_format', 'json');
   formData.append('language', 'en');
 
+  // Vocabulary/context biasing — Whisper uses the prompt to resolve
+  // names, jargon, and homophones. Configure via WHISPER_CONTEXT_PROMPT.
+  const contextPrompt = process.env.WHISPER_CONTEXT_PROMPT;
+  if (contextPrompt) {
+    formData.append('prompt', contextPrompt);
+  }
+
   const response = await fetch(GROQ_API_URL, {
     method: 'POST',
     headers: {

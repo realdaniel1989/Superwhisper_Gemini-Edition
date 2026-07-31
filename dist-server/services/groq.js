@@ -3,7 +3,7 @@
  * Calls Groq API from the server to keep the API key secret
  */
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/audio/transcriptions';
-function getApiKey() {
+export function getApiKey() {
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
         throw new Error('GROQ_API_KEY environment variable is required');
@@ -22,6 +22,13 @@ export async function transcribeAudio(audioBuffer, mimeType) {
     formData.append('file', new Blob([audioBuffer], { type: mimeType }), `recording.${extension}`);
     formData.append('model', 'whisper-large-v3-turbo');
     formData.append('response_format', 'json');
+    formData.append('language', 'en');
+    // Vocabulary/context biasing — Whisper uses the prompt to resolve
+    // names, jargon, and homophones. Configure via WHISPER_CONTEXT_PROMPT.
+    const contextPrompt = process.env.WHISPER_CONTEXT_PROMPT;
+    if (contextPrompt) {
+        formData.append('prompt', contextPrompt);
+    }
     const response = await fetch(GROQ_API_URL, {
         method: 'POST',
         headers: {
